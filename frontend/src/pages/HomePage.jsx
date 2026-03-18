@@ -123,8 +123,11 @@ const HomePage = () => {
 
       </section>
 
-      <section className='h-screen w-full bg-gray-200'>
-
+      <section className='h-screen w-full bg-gray-200 p-5'>
+       <h1 className=' text-center text-2xl sm:text-3xl lg:text-4xl '>We provide modern and creative design solutions tailored to your needs.</h1>
+       <div>
+        
+       </div>
       </section>
       </div>
   )
