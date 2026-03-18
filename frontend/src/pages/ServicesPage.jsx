@@ -2,7 +2,14 @@ import React from 'react'
 
 const ServicesPage = () => {
   return (
-    <div>ServicesPage</div>
+    <div >
+      <section className='h-screen w-full bg-gray-200 pt-20'>
+        servicePage 
+        
+      </section>
+      
+      
+      </div>
   )
 }
 
