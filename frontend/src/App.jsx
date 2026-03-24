@@ -9,19 +9,22 @@ import ServicesPage from './pages/ServicesPage'
 import ProjectDetailsPage from './pages/ProjectDetailsPage'
 import GalleryPage from './pages/GalleryPage'
 import ContactPage from './pages/ContactPage'
+import ScrollToTop from './components/ScrollToTop'
 
 
 const App = () => {
   return (
     <div>
+      <ScrollToTop/>
       <Navbar/>
+
       <Routes>
      
         <Route path='/' element={<HomePage/>}/>
         <Route path='/about' element={<AboutPage/>}/>
         <Route path='/projects' element={<ProjectsPage/>}/>
         <Route path='/services' element={<ServicesPage/>}/>
-        <Route path='/projectdetail' element={<ProjectDetailsPage/>}/>
+        <Route path='/projectdetail/:slug' element={<ProjectDetailsPage/>}/>
         <Route path='/gallery' element={<GalleryPage/>}/>
         <Route path='/contact' element={<ContactPage/>}/>
         
