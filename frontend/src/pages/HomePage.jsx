@@ -1,51 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { RiScrollToBottomLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import video from "../assets/herovideo.mp4";
 import building from "../assets/building.png";
 import interior from "../assets/interior.png";
+import logo from "../assets/gravityLogo.png";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const HomePage = () => {
   const nav = useNavigate();
 
-  const services = [
-    {
-      title: "Interior Design",
-      desc: "Beautiful and functional interiors designed to match your lifestyle and vision.",
-    },
-    {
-      title: "Architecture Design",
-      desc: "Creative architectural concepts that combine elegance, structure, and practicality.",
-    },
-    {
-      title: "3D Visualization",
-      desc: "Realistic 3D concepts to help you clearly imagine your future project before execution.",
-    },
-    {
-      title: "Space Planning",
-      desc: "Smart layout planning that maximizes comfort, utility, and beauty in every corner.",
-    },
-  ];
+  const [services, setServices] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
-  const projects = [
-    {
-      title: "Modern Living Room",
-      category: "Interior Design",
-      desc: "A stylish and comfortable living space designed with a modern aesthetic.",
-    },
-    {
-      title: "Luxury Bedroom",
-      category: "Architecture",
-      desc: "Elegant bedroom design focused on calmness, comfort, and premium style.",
-    },
-    {
-      title: "Office Space Concept",
-      category: "3D Visualization",
-      desc: "A creative office concept balancing productivity, elegance, and function.",
-    },
-  ];
-
+  const openPdf = () => {
+  window.open("/files/GRAVITY.pdf", "_blank");
+};
   const features = [
     {
       icon: "✨",
@@ -69,23 +43,28 @@ const HomePage = () => {
     },
   ];
 
-  const testimonials = [
-    {
-      name: "Ram Sharma",
-      role: "Home Owner",
-      text: "Amazing work! My home looks completely different now. Highly recommend.",
-    },
-    {
-      name: "Sita Karki",
-      role: "Client",
-      text: "Very professional team with creative ideas. Loved the final design.",
-    },
-    {
-      name: "Ramesh Thapa",
-      role: "Business Owner",
-      text: "They delivered on time and exceeded expectations. Great experience.",
-    },
-  ];
+  const getHomeData = async () => {
+    try {
+      const [serviceRes, projectRes, reviewRes] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/service/find`),
+        axios.get(`${BACKEND_URL}/api/project/all?page=1&limit=3&category=All`),
+        axios.get(`${BACKEND_URL}/api/review/all`),
+      ]);
+
+      setServices((serviceRes?.data?.data || serviceRes?.data || []).slice(0, 3));
+      setProjects((projectRes?.data?.data || []).slice(0, 3));
+      setReviews((reviewRes?.data?.data || []).slice(0, 3));
+    } catch (error) {
+      console.log("HOME DATA FETCH ERROR =", error);
+      setServices([]);
+      setProjects([]);
+      setReviews([]);
+    }
+  };
+
+  useEffect(() => {
+    getHomeData();
+  }, []);
 
   return (
     <div className="bg-[#f8f6f2] text-gray-900">
@@ -110,18 +89,28 @@ const HomePage = () => {
             transition={{ duration: 0.8 }}
             className="mb-4 uppercase tracking-[0.35em] text-sm text-white/80"
           >
-            Interior • Architecture • 3D Visualization
+            Architecture • Interior • 3D Visualization
           </motion.p>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            style={{ fontFamily: "Dancing Script, cursive" }}
-            className="text-white text-4xl sm:text-6xl lg:text-8xl drop-shadow-xl"
-          >
-            Gravity Design Studio
-          </motion.h1>
+          <div className="flex items-center">
+            <motion.img
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1 }}
+              src={logo}
+              className="h-35"
+              alt="logo image"
+            />
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1 }}
+              style={{ fontFamily: "Dancing Script, cursive" }}
+              className="text-white text-4xl sm:text-6xl lg:text-8xl drop-shadow-xl"
+            >
+              Gravity Design Studio
+            </motion.h1>
+          </div>
 
           <motion.p
             initial={{ opacity: 0, y: 35 }}
@@ -140,14 +129,14 @@ const HomePage = () => {
             className="mt-10 flex flex-col gap-4 sm:flex-row"
           >
             <button
-              onClick={() => nav("/projects")}
-              className="rounded-full bg-white px-8 py-3 text-lg font-medium text-black transition hover:scale-105"
+              onClick={openPdf}
+              className="rounded-full  px-8 py-3 text-lg font-medium text-white bg-[#795703] transition hover:scale-105"
             >
-              View Our Work
+              View Portfolio
             </button>
             <button
               onClick={() => nav("/contact")}
-              className="rounded-full border border-white px-8 py-3 text-lg font-medium text-white transition hover:bg-white hover:text-black"
+              className="rounded-full border border-white px-8 py-3 text-lg font-medium text-white transition hover:bg-[#795703] hover:text-white "
             >
               Get In Touch
             </button>
@@ -188,7 +177,7 @@ const HomePage = () => {
 
             <button
               onClick={() => nav("/projects")}
-              className="mt-8 rounded-full bg-black px-7 py-3 text-white transition hover:bg-gray-800"
+              className="mt-8 rounded-full bg-[#795703] px-7 py-3 text-white transition hover:bg-gray-800"
             >
               Explore Projects
             </button>
@@ -225,37 +214,47 @@ const HomePage = () => {
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 35 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.08 }}
-              className="group overflow-hidden rounded-[2rem] border border-gray-100 bg-[#f8f6f2] p-4 shadow-sm transition hover:-translate-y-2 hover:shadow-xl"
-            >
-              <div className="overflow-hidden rounded-[1.5rem]">
-                <img
-                  className="h-64 w-full object-cover transition duration-700 group-hover:scale-110"
-                  src={interior}
-                  alt={item.title}
-                />
-              </div>
+        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {services.length > 0 ? (
+            services.map((item, index) => (
+              <motion.div
+                key={item._id || index}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="group overflow-hidden rounded-[2rem] border border-gray-100 bg-[#f8f6f2] p-4 shadow-sm transition hover:-translate-y-2 hover:shadow-xl"
+              >
+                <div className="overflow-hidden rounded-[1.5rem]">
+                  <img
+                    className="h-64 w-full object-cover transition duration-700 group-hover:scale-110"
+                    src={item.image || interior}
+                    alt={item.title}
+                  />
+                </div>
 
-              <div className="pt-5">
-                <h3 className="text-2xl font-semibold text-gray-800">{item.title}</h3>
-                <p className="mt-3 leading-7 text-gray-600">{item.desc}</p>
+                <div className="pt-5">
+                  <h3 className="text-2xl font-semibold text-gray-800">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 leading-7 text-gray-600">
+                    {item.detail}
+                  </p>
 
-                <button
-                  onClick={() => nav("/services")}
-                  className="mt-6 rounded-full bg-black px-5 py-2.5 text-white transition hover:bg-gray-800"
-                >
-                  Learn More
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                  <button
+                    onClick={() => nav("/services")}
+                    className="mt-6 rounded-full bg-[#795703] px-5 py-2.5 text-white transition hover:bg-gray-800"
+                  >
+                    Learn More
+                  </button>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <p className="col-span-3 text-center text-gray-500">
+              No services found
+            </p>
+          )}
         </div>
       </section>
 
@@ -274,39 +273,47 @@ const HomePage = () => {
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 35 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.08 }}
-              className="group overflow-hidden rounded-[2rem] bg-white shadow-md transition hover:-translate-y-2 hover:shadow-xl"
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={interior}
-                  alt={item.title}
-                  className="h-72 w-full object-cover transition duration-700 group-hover:scale-110"
-                />
-              </div>
+        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.length > 0 ? (
+            projects.map((item, index) => (
+              <motion.div
+                key={item._id || index}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="group overflow-hidden rounded-[2rem] bg-white shadow-md transition hover:-translate-y-2 hover:shadow-xl"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={item.heroImage || interior}
+                    alt={item.title}
+                    className="h-72 w-full object-cover transition duration-700 group-hover:scale-110"
+                  />
+                </div>
 
-              <div className="p-6">
-                <span className="inline-block rounded-full bg-black/5 px-3 py-1 text-sm text-gray-700">
-                  {item.category}
-                </span>
-                <h3 className="mt-4 text-2xl font-semibold">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-gray-600">{item.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+                <div className="p-6">
+                  <span className="inline-block rounded-full bg-black/5 px-3 py-1 text-sm text-gray-700">
+                    {item.category}
+                  </span>
+                  <h3 className="mt-4 text-2xl font-semibold">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-gray-600 line-clamp-3">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <p className="col-span-3 text-center text-gray-500">
+              No projects found
+            </p>
+          )}
         </div>
 
         <div className="mt-10 flex justify-center">
           <button
             onClick={() => nav("/projects")}
-            className="rounded-full bg-black px-8 py-3 text-lg font-medium text-white transition hover:bg-gray-800"
+            className="rounded-full bg-[#795703] px-8 py-3 text-lg font-medium text-white transition hover:bg-gray-800"
           >
             View All Projects
           </button>
@@ -331,7 +338,7 @@ const HomePage = () => {
 
             <button
               onClick={() => nav("/contact")}
-              className="mt-8 rounded-full bg-black px-7 py-3 text-white transition hover:bg-gray-800"
+              className="mt-8 rounded-full bg-[#795703] px-7 py-3 text-white transition hover:bg-gray-800"
             >
               Get In Touch
             </button>
@@ -350,7 +357,9 @@ const HomePage = () => {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
                   {item.icon}
                 </div>
-                <h3 className="mb-3 text-xl font-semibold text-gray-800">{item.title}</h3>
+                <h3 className="mb-3 text-xl font-semibold text-gray-800">
+                  {item.title}
+                </h3>
                 <p className="leading-7 text-gray-600">{item.desc}</p>
               </motion.div>
             ))}
@@ -369,23 +378,37 @@ const HomePage = () => {
           </h2>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {testimonials.map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 35 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.08 }}
-              className="rounded-[2rem] bg-white p-7 shadow-sm transition hover:-translate-y-2 hover:shadow-lg"
-            >
-              <p className="leading-8 text-gray-600">“{item.text}”</p>
-              <div className="mt-6">
-                <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-sm text-gray-500">{item.role}</p>
-              </div>
-            </motion.div>
-          ))}
+        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {reviews.length > 0 ? (
+            reviews.map((item, index) => (
+              <motion.div
+                key={item._id || index}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="rounded-[2rem] bg-white p-7 shadow-sm transition hover:-translate-y-2 hover:shadow-lg"
+              >
+                <div className="flex items-center gap-4 mb-5">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-14 w-14 rounded-full object-cover"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{item.name}</h3>
+                    <p className="text-sm text-gray-500">{item.profession}</p>
+                  </div>
+                </div>
+
+                <p className="leading-8 text-gray-600">“{item.message}”</p>
+              </motion.div>
+            ))
+          ) : (
+            <p className="col-span-3 text-center text-gray-500">
+              No reviews found
+            </p>
+          )}
         </div>
       </section>
 

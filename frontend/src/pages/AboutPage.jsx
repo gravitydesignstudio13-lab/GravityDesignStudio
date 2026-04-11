@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import rambaran from "../assets/rambaran.png";
 import { animate, useInView, motion } from "motion/react";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import axios from "axios";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const CountUp = ({ to, suffix = "" }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const [count, setCount] = useState(0);
-
+  
   useEffect(() => {
     if (isInView) {
       const controls = animate(0, to, {
@@ -29,32 +31,31 @@ const CountUp = ({ to, suffix = "" }) => {
   );
 };
 
-const teamMembers = [
-  {
-    name: "Ar. Rambaran Kapar",
-    role: "Founder & CEO",
-    image: rambaran,
-  },
-  {
-    name: "Team Member",
-    role: "Architect",
-    image: rambaran,
-  },
-  {
-    name: "Team Member",
-    role: "3D Designer",
-    image: rambaran,
-  },
-];
+
 
 const stats = [
-  { value: 50, suffix: "+", label: "Projects" },
-  { value: 30, suffix: "+", label: "Happy Clients" },
-  { value: 11, suffix: "+", label: "Years Experience" },
-  { value: 100, suffix: "%", label: "Satisfaction" },
+  { value: 100, suffix: "+", label: "Projects" },
+  { value: 100, suffix: "+", label: "Happy Clients" },
+  { value: 10, suffix: "+", label: "Years Experience" },
+  { value: 99, suffix: "%", label: "Satisfaction" },
 ];
 
 const AboutPage = () => {
+  const [teamMembers, setTeamMembers] = useState([]);
+
+const getTeamMembers = async () => {
+  try {
+    const req = await axios.get(`${BACKEND_URL}/api/team/all`);
+    setTeamMembers(req?.data?.data || []);
+  } catch (error) {
+    console.log(error);
+    setTeamMembers([]);
+  }
+};
+useEffect(() => {
+  getTeamMembers();
+}, []);
+
   return (
     <div className="bg-[#f8f6f2] text-gray-900">
       {/* HERO */}

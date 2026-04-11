@@ -1,8 +1,30 @@
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import axios from "axios";
+import { Formik, Form, Field } from "formik";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const ContactPage = () => {
+  const [services, setServices] = useState([]);
+
+  const getServices = async () => {
+    try {
+      const req = await axios.get(`${BACKEND_URL}/api/service/find`);
+      setServices(req?.data || []);
+      console.log("servides data are ", services);
+    } catch (error) {
+      console.log("GET SERVICES ERROR =", error);
+      setServices([]);
+    }
+  };
+
+  useEffect(() => {
+    getServices();
+  }, []);
+
   return (
     <div className="bg-[#f8f6f2] text-gray-900">
       {/* Hero Section */}
@@ -104,67 +126,174 @@ const ContactPage = () => {
           </motion.div>
 
           {/* Right Side Form */}
-          <motion.form
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="bg-white rounded-[2rem] p-8 sm:p-10 shadow-sm border border-gray-100"
+          <Formik
+            initialValues={{
+              fullName: "",
+              email: "",
+              phone: "",
+              service: "",
+              message: "",
+            }}
+            validate={(values) => {
+              const errors = {};
+
+              if (!values.fullName) {
+                errors.fullName = "Full name is required";
+              }
+
+              if (!values.email) {
+                errors.email = "Email is required";
+              } else if (
+                !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+              ) {
+                errors.email = "Invalid email address";
+              }
+
+              if (!values.phone) {
+                errors.phone = "Phone is required";
+              }
+
+              if (!values.service) {
+                errors.service = "Service is required";
+              }
+
+              if (!values.message) {
+                errors.message = "Message is required";
+              }
+
+              return errors;
+            }}
+            onSubmit={async (values, { resetForm, setSubmitting }) => {
+              try {
+                const req = await axios.post(
+                  `${BACKEND_URL}/api/inquiry/create`,
+                  values
+                );
+
+                toast.success(req?.data?.message || "Inquiry sent successfully");
+                resetForm();
+              } catch (error) {
+                console.log("INQUIRY SUBMIT ERROR =", error);
+                toast.error(
+                  error?.response?.data?.message || "Something went wrong"
+                );
+              } finally {
+                setSubmitting(false);
+              }
+            }}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">Full Name</label>
-                <input
-                  type="text"
-                  placeholder="Enter your full name"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
-                />
-              </div>
+            {({ errors, touched, isSubmitting }) => (
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <Form className="bg-white rounded-[2rem] p-8 sm:p-10 shadow-sm border border-gray-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">
+                        Full Name
+                      </label>
+                      <Field
+                        type="text"
+                        name="fullName"
+                        placeholder="Enter your full name"
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
+                      />
+                      {touched.fullName && errors.fullName && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.fullName}
+                        </p>
+                      )}
+                    </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">Email</label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
-                />
-              </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">
+                        Email
+                      </label>
+                      <Field
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
+                      />
+                      {touched.email && errors.email && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.email}
+                        </p>
+                      )}
+                    </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">Phone</label>
-                <input
-                  type="text"
-                  placeholder="Enter your phone number"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
-                />
-              </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">
+                        Phone
+                      </label>
+                      <Field
+                        type="text"
+                        name="phone"
+                        placeholder="Enter your phone number"
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
+                      />
+                      {touched.phone && errors.phone && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.phone}
+                        </p>
+                      )}
+                    </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">Service</label>
-                <select className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black">
-                  <option>Interior Design</option>
-                  <option>Architecture Design</option>
-                  <option>3D Visualization</option>
-                  <option>Other</option>
-                </select>
-              </div>
-            </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">
+                        Service
+                      </label>
+                      <Field
+                        as="select"
+                        name="service"
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
+                      >
+                        <option value="">Select category</option>
+                        {services.map((item, index) => (
+                          <option key={item._id || index} value={item.title}>
+                            {item.title}
+                          </option>
+                        ))}
+                      </Field>
+                      {touched.service && errors.service && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.service}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-            <div className="mt-5">
-              <label className="block text-sm text-gray-600 mb-2">Message</label>
-              <textarea
-                rows="6"
-                placeholder="Tell us about your project"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black resize-none"
-              ></textarea>
-            </div>
+                  <div className="mt-5">
+                    <label className="block text-sm text-gray-600 mb-2">
+                      Message
+                    </label>
+                    <Field
+                      as="textarea"
+                      rows="6"
+                      name="message"
+                      placeholder="Tell us about your project"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black resize-none"
+                    />
+                    {touched.message && errors.message && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.message}
+                      </p>
+                    )}
+                  </div>
 
-            <button
-              type="submit"
-              className="mt-6 w-full bg-black text-white py-4 rounded-full hover:bg-gray-800 transition"
-            >
-              Send Inquiry
-            </button>
-          </motion.form>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="mt-6 w-full bg-black text-white py-4 rounded-full hover:bg-gray-800 transition disabled:opacity-60"
+                  >
+                    {isSubmitting ? "Sending..." : "Send Inquiry"}
+                  </button>
+                </Form>
+              </motion.div>
+            )}
+          </Formik>
         </div>
       </section>
 
@@ -183,6 +312,8 @@ const ContactPage = () => {
           </p>
         </div>
       </section>
+
+      <ToastContainer />
     </div>
   );
 };

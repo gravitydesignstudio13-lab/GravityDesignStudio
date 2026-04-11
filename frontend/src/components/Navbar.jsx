@@ -22,8 +22,8 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about" },
-    { name: "Our Services", path: "/services" },
-    { name: "Projects", path: "/projects" },
+    { name: "Services", path: "/services" },
+    
     { name: "Gallery", path: "/gallery" },
     { name: "Contact", path: "/contact" },
   ];
@@ -50,7 +50,7 @@ const Navbar = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `${isActive ? "text-red-400" : "text-gray-800"} hover:text-red-400 transition`
+                  `${isActive ? "text-[#795703]" : "text-gray-800"} hover:text-[#795703] transition`
                 }
               >
                 {item.name}
@@ -112,8 +112,8 @@ const Navbar = () => {
                       onClick={() => setMenuOpen(false)}
                       className={({ isActive }) =>
                         `block ${
-                          isActive ? "text-red-400" : "text-gray-800"
-                        } hover:text-red-400 transition`
+                          isActive ? "text-[#795703]" : "text-gray-800"
+                        } hover:text-[#795703] transition`
                       }
                     >
                       {item.name}
