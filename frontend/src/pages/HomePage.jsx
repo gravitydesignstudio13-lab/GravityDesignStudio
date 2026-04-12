@@ -17,9 +17,7 @@ const HomePage = () => {
   const [projects, setProjects] = useState([]);
   const [reviews, setReviews] = useState([]);
 
-  const openPdf = () => {
-  window.open("/files/GRAVITY.pdf", "_blank");
-};
+ 
   const features = [
     {
       icon: "✨",
@@ -128,12 +126,21 @@ const HomePage = () => {
             transition={{ duration: 1, delay: 0.35 }}
             className="mt-10 flex flex-col gap-4 sm:flex-row"
           >
-            <button
+            {/* <button
               onClick={openPdf}
               className="rounded-full  px-8 py-3 text-lg font-medium text-white bg-[#795703] transition hover:scale-105"
             >
               View Portfolio
-            </button>
+            </button> */}
+            <a
+              href="https://drive.google.com/uc?export=download&id=17s0oK14_x4aMkPXH9LTI9VcPf-2HSKAS"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button
+               className="rounded-full  px-8 py-3 text-lg font-medium text-white bg-[#795703] transition hover:scale-105"
+              >Download Portfolio</button>
+            </a>
             <button
               onClick={() => nav("/contact")}
               className="rounded-full border border-white px-8 py-3 text-lg font-medium text-white transition hover:bg-[#795703] hover:text-white "
