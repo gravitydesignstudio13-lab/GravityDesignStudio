@@ -1,5 +1,7 @@
 import Review from "../model/reviewSchema.js";
+import cloudinary from "../config/cloudinary.js";
 
+// ADD REVIEW
 export const addReview = async (req, res) => {
   try {
     const { name, profession, message } = req.body;
@@ -18,7 +20,8 @@ export const addReview = async (req, res) => {
       });
     }
 
-    const image = `${process.env.BACKEND_URL}/upload/${req.file.filename}`;
+    // ✅ Cloudinary URL
+    const image = req.file.path;
 
     const newReview = new Review({
       name,
@@ -43,6 +46,7 @@ export const addReview = async (req, res) => {
   }
 };
 
+// GET REVIEWS
 export const getReviews = async (req, res) => {
   try {
     const reviews = await Review.find().sort({ createdAt: -1 });
@@ -60,18 +64,31 @@ export const getReviews = async (req, res) => {
   }
 };
 
+// DELETE REVIEW (Cloudinary + DB)
 export const deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedReview = await Review.findByIdAndDelete(id);
+    const review = await Review.findById(id);
 
-    if (!deletedReview) {
+    if (!review) {
       return res.status(404).json({
         success: false,
         message: "Review not found",
       });
     }
+
+    // 🔥 Delete from Cloudinary
+    if (review.image) {
+      const publicId = review.image
+        .split("/")
+        .slice(-1)[0]
+        .split(".")[0];
+
+      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+    }
+
+    await Review.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,

@@ -1,57 +1,64 @@
 import Gallery from "../model/gallerySchema.js";
+import cloudinary from "../config/cloudinary.js";
 
-// ADD CATEGORY
 export const addCategory = async (req, res) => {
   try {
-    const { category} = req.body;
+    const { category } = req.body;
 
-    if (!category ) {
+    console.log("BODY =", req.body);
+    console.log("FILE =", req.file);
+
+    if (!category) {
       return res.status(400).json({
         success: false,
         message: "Category is required",
       });
     }
-     
-   
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required",
+      });
+    }
+
     const newCategory = new Gallery({
       category,
-      image:req.file? `${process.env.BACKEND_URL}/upload/${req.file.filename}`:null
+      image: req.file.path, // ✅ Cloudinary URL
     });
 
     await newCategory.save();
 
     return res.status(201).json({
       success: true,
-      message: "Image added successfully",
+      message: "Category added successfully",
       data: newCategory,
     });
+
   } catch (error) {
+    console.log("ADD GALLERY FULL ERROR =", error);
+    console.log("ADD GALLERY ERROR MESSAGE =", error.message);
+
     return res.status(500).json({
       success: false,
-      message: "Error while adding Image",
-      error: error.message,
+      message: error.message,
     });
   }
 };
-
-// GET ALL Gallery
 
 export const getAllGallery = async (req, res) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 9;
     const category = req.query.category || "All";
-
     const skip = (page - 1) * limit;
 
     let filter = {};
-
     if (category !== "All") {
       filter.category = category;
     }
 
     const totalGallery = await Gallery.countDocuments(filter);
-
     const gallery = await Gallery.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -73,24 +80,30 @@ export const getAllGallery = async (req, res) => {
     });
   }
 };
-// DELETE CATEGORY
+
 export const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedCategory = await Gallery.findByIdAndDelete(id);
+    const categoryData = await Gallery.findById(id);
 
-    if (!deletedCategory) {
+    if (!categoryData) {
       return res.status(404).json({
         success: false,
         message: "Image not found",
       });
     }
 
+    if (categoryData.image) {
+      const publicId = categoryData.image.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+    }
+
+    await Gallery.findByIdAndDelete(id);
+
     return res.status(200).json({
       success: true,
       message: "Image deleted successfully",
-      data: deletedCategory,
     });
   } catch (error) {
     return res.status(500).json({

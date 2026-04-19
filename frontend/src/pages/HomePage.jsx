@@ -14,7 +14,7 @@ const HomePage = () => {
   const nav = useNavigate();
 
   const [services, setServices] = useState([]);
-  const [projects, setProjects] = useState([]);
+ 
   const [reviews, setReviews] = useState([]);
 
  
@@ -45,12 +45,12 @@ const HomePage = () => {
     try {
       const [serviceRes, projectRes, reviewRes] = await Promise.all([
         axios.get(`${BACKEND_URL}/api/service/find`),
-        axios.get(`${BACKEND_URL}/api/project/all?page=1&limit=3&category=All`),
+       
         axios.get(`${BACKEND_URL}/api/review/all`),
       ]);
 
       setServices((serviceRes?.data?.data || serviceRes?.data || []).slice(0, 3));
-      setProjects((projectRes?.data?.data || []).slice(0, 3));
+      
       setReviews((reviewRes?.data?.data || []).slice(0, 3));
     } catch (error) {
       console.log("HOME DATA FETCH ERROR =", error);
@@ -126,12 +126,7 @@ const HomePage = () => {
             transition={{ duration: 1, delay: 0.35 }}
             className="mt-10 flex flex-col gap-4 sm:flex-row"
           >
-            {/* <button
-              onClick={openPdf}
-              className="rounded-full  px-8 py-3 text-lg font-medium text-white bg-[#795703] transition hover:scale-105"
-            >
-              View Portfolio
-            </button> */}
+           
             <a
               href="https://drive.google.com/uc?export=download&id=17s0oK14_x4aMkPXH9LTI9VcPf-2HSKAS"
               target="_blank"
@@ -183,10 +178,10 @@ const HomePage = () => {
             </p>
 
             <button
-              onClick={() => nav("/projects")}
+              onClick={() => nav("/services")}
               className="mt-8 rounded-full bg-[#795703] px-7 py-3 text-white transition hover:bg-gray-800"
             >
-              Explore Projects
+              Explore 
             </button>
           </motion.div>
 
@@ -265,67 +260,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* PROJECTS */}
-      <section className="px-5 py-20 sm:px-10 lg:px-20">
-        <div className="text-center">
-          <p className="mb-4 uppercase tracking-[0.3em] text-sm text-gray-500">
-            Recent Projects
-          </p>
-          <h2 className="text-3xl font-semibold sm:text-4xl lg:text-5xl">
-            Selected works that reflect our design vision.
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-gray-600">
-            Explore some of our latest interior, architectural, and creative
-            design works.
-          </p>
-        </div>
-
-        <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.length > 0 ? (
-            projects.map((item, index) => (
-              <motion.div
-                key={item._id || index}
-                initial={{ opacity: 0, y: 35 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
-                className="group overflow-hidden rounded-[2rem] bg-white shadow-md transition hover:-translate-y-2 hover:shadow-xl"
-              >
-                <div className="overflow-hidden">
-                  <img
-                    src={item.heroImage || interior}
-                    alt={item.title}
-                    className="h-72 w-full object-cover transition duration-700 group-hover:scale-110"
-                  />
-                </div>
-
-                <div className="p-6">
-                  <span className="inline-block rounded-full bg-black/5 px-3 py-1 text-sm text-gray-700">
-                    {item.category}
-                  </span>
-                  <h3 className="mt-4 text-2xl font-semibold">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-gray-600 line-clamp-3">
-                    {item.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <p className="col-span-3 text-center text-gray-500">
-              No projects found
-            </p>
-          )}
-        </div>
-
-        <div className="mt-10 flex justify-center">
-          <button
-            onClick={() => nav("/projects")}
-            className="rounded-full bg-[#795703] px-8 py-3 text-lg font-medium text-white transition hover:bg-gray-800"
-          >
-            View All Projects
-          </button>
-        </div>
-      </section>
+      
+      
 
       {/* WHY CHOOSE US */}
       <section className="bg-white px-5 py-20 sm:px-10 lg:px-20">

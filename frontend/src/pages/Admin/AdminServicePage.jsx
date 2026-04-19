@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Formik, Form, Field } from "formik";
-  import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -13,7 +13,7 @@ const AdminServicePage = () => {
     try {
       setLoading(true);
       const req = await axios.get(`${BACKEND_URL}/api/service/find`);
-      setServices(req?.data || []);
+      setServices(req?.data?.data || []); // ✅ FIXED
     } catch (error) {
       console.log(error);
       setServices([]);
@@ -27,12 +27,13 @@ const AdminServicePage = () => {
   }, []);
 
   const handleDeleteService = async (id) => {
-    console.log(id)
     const ok = window.confirm("Are you sure you want to delete this service?");
     if (!ok) return;
 
     try {
-      const req = await axios.delete(`${BACKEND_URL}/api/service/delet/${id}`);
+      const req = await axios.delete(
+        `${BACKEND_URL}/api/service/delete/${id}` // ✅ FIXED URL
+      );
 
       if (req?.data?.success) {
         toast.success(req.data.message);
@@ -40,12 +41,15 @@ const AdminServicePage = () => {
       }
     } catch (error) {
       console.log(error);
-      alert(error?.response?.data?.message || "Failed to delete service...");
+      toast.error(
+        error?.response?.data?.message || "Failed to delete service..."
+      );
     }
   };
 
   return (
     <div className="space-y-8">
+      {/* ADD SERVICE */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <h1 className="text-2xl font-bold mb-5">Manage Services</h1>
 
@@ -82,7 +86,9 @@ const AdminServicePage = () => {
               }
             } catch (error) {
               console.log(error);
-              alert(error?.response?.data?.message || "Failed to add service");
+              toast.error(
+                error?.response?.data?.message || "Failed to add service"
+              );
             } finally {
               setSubmitting(false);
             }
@@ -100,7 +106,9 @@ const AdminServicePage = () => {
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setFieldValue("image", e.currentTarget.files[0])}
+                onChange={(e) =>
+                  setFieldValue("image", e.currentTarget.files[0])
+                }
                 className="border border-gray-300 rounded-xl px-4 py-3 outline-none"
               />
 
@@ -123,27 +131,28 @@ const AdminServicePage = () => {
         </Formik>
       </div>
 
+      {/* SERVICE LIST */}
       <div className="bg-white rounded-2xl shadow-sm p-6 overflow-x-auto">
         <h2 className="text-2xl font-bold mb-5">All Services</h2>
 
         {loading ? (
           <p className="text-gray-500">Loading...</p>
-        ) : services.length === 0 ? (
+        ) : !Array.isArray(services) || services.length === 0 ? (
           <p className="text-gray-500">No services found</p>
         ) : (
           <table className="w-full min-w-[900px] text-left border-collapse">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="py-4 px-4 font-semibold text-gray-700">Image</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Title</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Description</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Action</th>
+                <th className="py-4 px-4">Image</th>
+                <th className="py-4 px-4">Title</th>
+                <th className="py-4 px-4">Description</th>
+                <th className="py-4 px-4">Action</th>
               </tr>
             </thead>
 
             <tbody>
               {services.map((item) => (
-                <tr key={item._id} className="border-b hover:bg-gray-50 transition">
+                <tr key={item._id} className="border-b hover:bg-gray-50">
                   <td className="py-4 px-4">
                     <img
                       src={item.image}
@@ -152,7 +161,7 @@ const AdminServicePage = () => {
                     />
                   </td>
 
-                  <td className="py-4 px-4 font-medium text-gray-800">
+                  <td className="py-4 px-4 font-medium">
                     {item.title}
                   </td>
 
@@ -163,7 +172,7 @@ const AdminServicePage = () => {
                   <td className="py-4 px-4">
                     <button
                       onClick={() => handleDeleteService(item._id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
                     >
                       Delete
                     </button>
@@ -174,7 +183,8 @@ const AdminServicePage = () => {
           </table>
         )}
       </div>
-      <ToastContainer/>
+
+      <ToastContainer />
     </div>
   );
 };

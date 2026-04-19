@@ -1,4 +1,5 @@
 import Project from "../model/projectsSchema.js";
+import cloudinary from "../config/cloudinary.js";
 
 // ADD PROJECT
 export const addProject = async (req, res) => {
@@ -43,12 +44,11 @@ export const addProject = async (req, res) => {
       });
     }
 
-    const heroImage = `${process.env.BACKEND_URL}/upload/${req.files.heroImage[0].filename}`;
+    // ✅ Cloudinary URLs
+    const heroImage = req.files.heroImage[0].path;
 
     const gallery = req.files.gallery
-      ? req.files.gallery.map(
-          (file) => `${process.env.BACKEND_URL}/upload/${file.filename}`
-        )
+      ? req.files.gallery.map((file) => file.path)
       : [];
 
     const newProject = new Project({
@@ -82,8 +82,6 @@ export const addProject = async (req, res) => {
     });
   }
 };
-
-
 
 // GET ALL PROJECTS
 export const getAllProjects = async (req, res) => {
@@ -129,6 +127,7 @@ export const getAllProjects = async (req, res) => {
     });
   }
 };
+
 // GET SINGLE PROJECT
 export const getSingleProject = async (req, res) => {
   try {
@@ -158,24 +157,44 @@ export const getSingleProject = async (req, res) => {
   }
 };
 
-// DELETE PROJECT
+// DELETE PROJECT (🔥 Cloudinary + DB)
 export const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedProject = await Project.findByIdAndDelete(id);
+    const project = await Project.findById(id);
 
-    if (!deletedProject) {
+    if (!project) {
       return res.status(404).json({
         success: false,
         message: "Project not found",
       });
     }
 
+    // 🔥 Delete hero image
+    if (project.heroImage) {
+      const publicId = project.heroImage
+        .split("/")
+        .slice(-1)[0]
+        .split(".")[0];
+
+      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+    }
+
+    // 🔥 Delete gallery images
+    if (project.gallery && project.gallery.length > 0) {
+      for (let img of project.gallery) {
+        const publicId = img.split("/").slice(-1)[0].split(".")[0];
+
+        await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+      }
+    }
+
+    await Project.findByIdAndDelete(id);
+
     return res.status(200).json({
       success: true,
       message: "Project deleted successfully",
-      data: deletedProject,
     });
   } catch (error) {
     console.log("DELETE PROJECT ERROR =", error);

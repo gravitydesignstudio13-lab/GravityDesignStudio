@@ -1,9 +1,15 @@
 import Team from "../model/teamSchema.js";
+import cloudinary from "../config/cloudinary.js";
 
+// ADD TEAM MEMBER
 export const addTeamMember = async (req, res) => {
   try {
     const { name, role } = req.body;
 
+    console.log("BODY =", req.body);
+    console.log("FILE =", req.file);
+
+    // validation
     if (!name || !role) {
       return res.status(400).json({
         success: false,
@@ -18,8 +24,10 @@ export const addTeamMember = async (req, res) => {
       });
     }
 
-    const image = `${process.env.BACKEND_URL}/upload/${req.file.filename}`;
+    // ✅ get cloudinary url
+    const image = req.file.path;
 
+    // ✅ save to DB
     const newMember = new Team({
       name,
       role,
@@ -28,11 +36,13 @@ export const addTeamMember = async (req, res) => {
 
     await newMember.save();
 
+    // ✅ send response
     return res.status(201).json({
       success: true,
       message: "Team member added successfully",
       data: newMember,
     });
+
   } catch (error) {
     console.log("ADD TEAM MEMBER ERROR =", error);
     return res.status(500).json({
@@ -41,7 +51,7 @@ export const addTeamMember = async (req, res) => {
     });
   }
 };
-
+// GET ALL TEAM MEMBERS
 export const getAllTeamMembers = async (req, res) => {
   try {
     const members = await Team.find().sort({ createdAt: -1 });
@@ -59,18 +69,31 @@ export const getAllTeamMembers = async (req, res) => {
   }
 };
 
+// DELETE TEAM MEMBER (Cloudinary + DB)
 export const deleteTeamMember = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedMember = await Team.findByIdAndDelete(id);
+    const member = await Team.findById(id);
 
-    if (!deletedMember) {
+    if (!member) {
       return res.status(404).json({
         success: false,
         message: "Team member not found",
       });
     }
+
+    // 🔥 Delete from Cloudinary
+    if (member.image) {
+      const publicId = member.image
+        .split("/")
+        .slice(-1)[0]
+        .split(".")[0];
+
+      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+    }
+
+    await Team.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,

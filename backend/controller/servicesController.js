@@ -1,6 +1,7 @@
-import Service from "../model/servicesSchima.js"
+import Service from "../model/servicesSchima.js";
+import cloudinary from "../config/cloudinary.js";
 
-
+// CREATE SERVICE
 export const createService = async (req, res) => {
   try {
     const { title, detail } = req.body;
@@ -15,9 +16,8 @@ export const createService = async (req, res) => {
     const data = await Service.create({
       title,
       detail,
-      image: req.file
-        ? `${process.env.BACKEND_URL}/upload/${req.file.filename}`
-        : null,
+      // ✅ Cloudinary URL
+      image: req.file ? req.file.path : null,
     });
 
     res.status(201).json({
@@ -34,13 +34,29 @@ export const createService = async (req, res) => {
   }
 };
 
+// DELETE SERVICE (Cloudinary + DB)
 export const deleteService = async (req, res) => {
   try {
-    const data = await Service.findByIdAndDelete(req.params.id);
+    const service = await Service.findById(req.params.id);
 
-    if (!data) {
-      return res.status(404).json({ message: "Service not found" });
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
     }
+
+    // 🔥 Delete image from Cloudinary
+    if (service.image) {
+      const publicId = service.image
+        .split("/")
+        .slice(-1)[0]
+        .split(".")[0];
+
+      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+    }
+
+    await Service.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -54,11 +70,19 @@ export const deleteService = async (req, res) => {
   }
 };
 
-export const findService=async(req,res)=>{
-    try {
-        const data=await Service.find()
-        res.status(200).json(data)
-    } catch (error) {
-        res.status(500).json({message:"Error foinding Services"})
-    }
-}
+// GET SERVICES
+export const findService = async (req, res) => {
+  try {
+    const data = await Service.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error finding Services",
+    });
+  }
+};

@@ -12,9 +12,17 @@ const ContactPage = () => {
 
   const getServices = async () => {
     try {
-      const req = await axios.get(`${BACKEND_URL}/api/service/find`);
-      setServices(req?.data || []);
-      console.log("servides data are ", services);
+      const res = await axios.get(`${BACKEND_URL}/api/service/find`);
+
+      // ✅ FIX: handle API response properly
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setServices(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        setServices(res.data);
+      } else {
+        setServices([]);
+      }
+
     } catch (error) {
       console.log("GET SERVICES ERROR =", error);
       setServices([]);
@@ -58,17 +66,17 @@ const ContactPage = () => {
           {[
             {
               title: "Phone",
-              value: "+977 98XXXXXXXX",
+              value: "+977 9844425728",
               sub: "Call us for direct consultation",
             },
             {
               title: "Email",
-              value: "gravitydesignstudio@gmail.com",
+              value: "gravitydesigns1@yahoo.com",
               sub: "Send us your project details anytime",
             },
             {
               title: "Location",
-              value: "Kathmandu, Nepal",
+              value: "Bishalnagar-5, Kathmandu",
               sub: "Available for residential & commercial projects",
             },
           ].map((item, index) => (
@@ -190,6 +198,7 @@ const ContactPage = () => {
               >
                 <Form className="bg-white rounded-[2rem] p-8 sm:p-10 shadow-sm border border-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
                     <div>
                       <label className="block text-sm text-gray-600 mb-2">
                         Full Name
@@ -251,11 +260,14 @@ const ContactPage = () => {
                         className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-black"
                       >
                         <option value="">Select category</option>
-                        {services.map((item, index) => (
-                          <option key={item._id || index} value={item.title}>
-                            {item.title}
-                          </option>
-                        ))}
+
+                        {/* ✅ FIXED SAFE MAP */}
+                        {Array.isArray(services) &&
+                          services.map((item, index) => (
+                            <option key={item._id || index} value={item.title}>
+                              {item.title}
+                            </option>
+                          ))}
                       </Field>
                       {touched.service && errors.service && (
                         <p className="text-red-500 text-sm mt-1">
@@ -263,6 +275,7 @@ const ContactPage = () => {
                         </p>
                       )}
                     </div>
+
                   </div>
 
                   <div className="mt-5">

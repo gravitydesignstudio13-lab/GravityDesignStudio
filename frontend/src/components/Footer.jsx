@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <h1
               style={{ fontFamily: "Dancing Script, cursive" }}
-              className="text-3xl sm:text-4xl text-blue-400 mb-4"
+              className="text-3xl sm:text-4xl  mb-4"
             >
               Gravity Design Studio
             </h1>
@@ -34,12 +34,7 @@ const Footer = () => {
               >
                 Services
               </NavLink>
-              <NavLink
-                to="/projects"
-                className="hover:text-blue-400 transition"
-              >
-                Projects
-              </NavLink>
+              
               <NavLink to="/contact" className="hover:text-blue-400 transition">
                 Contact
               </NavLink>
@@ -77,8 +72,8 @@ const Footer = () => {
               </div>
 
               <div className="mt-4 flex flex-col gap-2 text-gray-300 text-sm">
-                <p>Bishalnagar, Kathmandu Nepal</p>
-                <p>gravitydesignstudio@gmail.com</p>
+                <p>Bishalnagar-5, Kathmandu Nepal</p>
+                <p>gravitydesigns1@yahoo.com</p>
                 <p>+977 9844425728</p>
               </div>
             </div>

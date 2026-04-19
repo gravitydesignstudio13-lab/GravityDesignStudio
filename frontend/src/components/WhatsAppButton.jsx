@@ -9,7 +9,7 @@ const WhatsAppButton = () => {
 
   if (isAdminPage) return null;
 
-  const phoneNumber = "9779817977212"; 
+  const phoneNumber = "9779844425728"; 
   const message = "Hello, I want to know more about your design services.";
 
   const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

@@ -5,27 +5,22 @@ import { ToastContainer, toast } from "react-toastify";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-
 const AdminGalleryPage = () => {
   const [gallery, setGallery] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
-const getServices = async () => {
+  // ✅ FIXED
+  const getServices = async () => {
     try {
-      setLoading(true);
       const req = await axios.get(`${BACKEND_URL}/api/service/find`);
-      setServices(req?.data || []);
+      setServices(req?.data?.data || []);
     } catch (error) {
       console.log(error);
       setServices([]);
-    } finally {
-      setLoading(false);
     }
   };
-
- 
 
   const getGallery = async () => {
     try {
@@ -51,24 +46,27 @@ const getServices = async () => {
   }, []);
 
   const handleDeleteGallery = async (id) => {
-    const ok = window.confirm("Are you sure you want to delete this gallery item?");
+    const ok = window.confirm("Are you sure you want to delete this item?");
     if (!ok) return;
 
     try {
-      const req = await axios.delete(`${BACKEND_URL}/api/gallery/delete/${id}`);
+      const req = await axios.delete(
+        `${BACKEND_URL}/api/gallery/delete/${id}`
+      );
 
       if (req?.data?.success) {
-        toast.success(req.data.message || "Gallery item deleted successfully");
+        toast.success(req.data.message || "Deleted successfully");
         getGallery();
       }
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || "Failed to delete gallery item");
+      toast.error("Failed to delete");
     }
   };
 
   return (
     <div className="space-y-8">
+      {/* ADD GALLERY */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
         <h1 className="text-2xl font-bold mb-5">Manage Gallery</h1>
 
@@ -97,17 +95,15 @@ const getServices = async () => {
               );
 
               if (req?.data?.success) {
-                toast.success(req.data.message || "Gallery item added successfully");
+                toast.success("Added successfully");
                 resetForm();
                 setFieldValue("image", null);
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = "";
-                }
+                fileInputRef.current.value = "";
                 getGallery();
               }
             } catch (error) {
               console.log(error);
-              toast.error(error?.response?.data?.message || "Failed to add gallery item");
+              toast.error("Upload failed");
             } finally {
               setSubmitting(false);
             }
@@ -118,75 +114,78 @@ const getServices = async () => {
               <Field
                 as="select"
                 name="category"
-                className="border border-gray-300 rounded-xl px-4 py-3 outline-none bg-white"
+                className="border rounded-xl px-4 py-3"
               >
                 <option value="">Select category</option>
-                {services.map((item, index) => (
-                  <option key={index} value={item.title}>
-                    {item.title}
-                  </option>
-                ))}
+
+                {/* ✅ SAFE MAP */}
+                {Array.isArray(services) &&
+                  services.map((item) => (
+                    <option key={item._id} value={item.title}>
+                      {item.title}
+                    </option>
+                  ))}
               </Field>
 
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={(e) => setFieldValue("image", e.currentTarget.files[0])}
-                className="border border-gray-300 rounded-xl px-4 py-3 outline-none bg-white"
+                onChange={(e) =>
+                  setFieldValue("image", e.currentTarget.files[0])
+                }
+                className="border rounded-xl px-4 py-3"
               />
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-black text-white px-6 py-3 rounded-xl md:col-span-2 hover:bg-gray-800 transition disabled:opacity-50"
+                className="bg-black text-white px-6 py-3 rounded-xl md:col-span-2"
               >
-                {isSubmitting ? "Adding..." : "Add Gallery Item"}
+                {isSubmitting ? "Adding..." : "Add Gallery"}
               </button>
             </Form>
           )}
         </Formik>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm p-6 overflow-x-auto">
-        <h2 className="text-2xl font-bold mb-5">All Gallery Items</h2>
+      {/* GALLERY TABLE */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <h2 className="text-2xl font-bold mb-5">All Gallery</h2>
 
         {loading ? (
-          <p className="text-gray-500">Loading...</p>
+          <p>Loading...</p>
         ) : gallery.length === 0 ? (
-          <p className="text-gray-500">No gallery items found</p>
+          <p>No data</p>
         ) : (
-          <table className="w-full min-w-[900px] text-left border-collapse">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="py-4 px-4 font-semibold text-gray-700">SN</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Image</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Category</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Action</th>
+              <tr>
+                <th>SN</th>
+                <th>Image</th>
+                <th>Category</th>
+                <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
               {gallery.map((item, index) => (
-                <tr key={item._id} className="border-b hover:bg-gray-50 transition">
-                  <td className="py-4 px-4 font-medium">{index + 1}</td>
+                <tr key={item._id}>
+                  <td>{index + 1}</td>
 
-                  <td className="py-4 px-4">
+                  <td>
                     <img
                       src={item.image}
-                      alt={item.category}
-                      className="h-16 w-20 object-cover rounded-lg"
+                      className="h-16 w-20 object-cover"
                     />
                   </td>
 
-                  <td className="py-4 px-4 font-medium text-gray-800">
-                    {item.category}
-                  </td>
+                  <td>{item.category}</td>
 
-                  <td className="py-4 px-4">
+                  <td>
                     <button
                       onClick={() => handleDeleteGallery(item._id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                      className="bg-red-500 text-white px-3 py-1 rounded"
                     >
                       Delete
                     </button>
@@ -198,7 +197,7 @@ const getServices = async () => {
         )}
       </div>
 
-      <ToastContainer position="top-right" autoClose={2000} theme="colored" />
+      <ToastContainer />
     </div>
   );
 };

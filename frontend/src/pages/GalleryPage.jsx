@@ -11,16 +11,28 @@ const GalleryPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-const getServices = async () => {
+  // ✅ GET SERVICES (FIXED)
+  const getServices = async () => {
     try {
-      const req = await axios.get(`${BACKEND_URL}/api/service/find`);
-      setServices(req?.data || []);
+      const res = await axios.get(`${BACKEND_URL}/api/service/find`);
+
+      console.log("SERVICES RESPONSE =", res.data);
+
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+        setServices(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        // fallback if backend sends array directly
+        setServices(res.data);
+      } else {
+        setServices([]);
+      }
     } catch (error) {
-      console.log(error);
+      console.log("GET SERVICES ERROR =", error);
       setServices([]);
-    } 
+    }
   };
 
+  // ✅ GET GALLERY
   const getGallery = async () => {
     try {
       const res = await axios.get(
@@ -54,7 +66,15 @@ const getServices = async () => {
     setCurrentPage(1);
   };
 
-  const categories = ["All", ...new Set(services.map((item) => item.title))];
+  // ✅ SAFE CATEGORY GENERATION
+  const categories = [
+    "All",
+    ...new Set(
+      Array.isArray(services)
+        ? services.map((item) => item.title)
+        : []
+    ),
+  ];
 
   return (
     <div className="bg-[#f8f6f2] text-gray-900">
@@ -121,7 +141,9 @@ const getServices = async () => {
         </div>
 
         {gallery.length === 0 && (
-          <p className="text-center text-gray-500 mt-10">No gallery items found</p>
+          <p className="text-center text-gray-500 mt-10">
+            No gallery items found
+          </p>
         )}
       </section>
 
