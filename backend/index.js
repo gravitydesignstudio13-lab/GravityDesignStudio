@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const frontend = {
-  origin: "http://localhost:5173",
+  origin: "https://gravitydesignstudioo.netlify.app",
   credentials: true,
 };
 

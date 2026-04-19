@@ -3,7 +3,6 @@ import { motion } from "motion/react";
 import { RiScrollToBottomLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import video from "../assets/herovideo.mp4";
 import building from "../assets/building.png";
 import interior from "../assets/interior.png";
 import logo from "../assets/gravityLogo.png";
@@ -75,7 +74,7 @@ const HomePage = () => {
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
         >
-          <source src={video} type="video/mp4" />
+          <source src="https://res.cloudinary.com/dkuqgroma/video/upload/v1776598967/herovideo_n1pqby.mp4" type="video/mp4" />
         </video>
 
         <div className="absolute inset-0 bg-black/50" />
