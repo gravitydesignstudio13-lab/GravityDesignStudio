@@ -42,11 +42,11 @@ const HomePage = () => {
 
   const getHomeData = async () => {
     try {
-      const [serviceRes, projectRes, reviewRes] = await Promise.all([
-        axios.get(`${BACKEND_URL}/api/service/find`),
-       
-        axios.get(`${BACKEND_URL}/api/review/all`),
-      ]);
+      
+      const [serviceRes, reviewRes] = await Promise.all([
+  axios.get(`${BACKEND_URL}/api/service/find`),
+  axios.get(`${BACKEND_URL}/api/review/all`),
+]);
 
       setServices((serviceRes?.data?.data || serviceRes?.data || []).slice(0, 3));
       
@@ -54,7 +54,7 @@ const HomePage = () => {
     } catch (error) {
       console.log("HOME DATA FETCH ERROR =", error);
       setServices([]);
-      setProjects([]);
+     
       setReviews([]);
     }
   };
