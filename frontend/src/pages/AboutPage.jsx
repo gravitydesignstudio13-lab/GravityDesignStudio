@@ -117,7 +117,7 @@ useEffect(() => {
             </p>
 
             <h2 className="text-3xl sm:text-4xl font-semibold">
-              Ar. Rambaran Kapar
+              AR. RAMBARAN KAPAR
             </h2>
             <p className="mt-2 text-lg text-gray-500">Founder & CEO</p>
 
