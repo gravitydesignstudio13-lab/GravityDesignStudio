@@ -1,39 +1,31 @@
 import Project from "../model/projectsSchema.js";
 import cloudinary from "../config/cloudinary.js";
 
-// ADD PROJECT
+
+// 🔥 ADD PROJECT
 export const addProject = async (req, res) => {
   try {
     const {
       title,
-      category,
-      projectType,
       location,
-      year,
-      client,
-      area,
-      service,
       description,
-      challenge,
-      solution,
+      fullDescription,
+      status,
+      category,
+      year,
+      area,
+      duration,
+      team,
+      features,
+      technologies,
+     
     } = req.body;
 
-    if (
-      !title ||
-      !category ||
-      !location ||
-      !projectType ||
-      !year ||
-      !client ||
-      !area ||
-      !service ||
-      !description ||
-      !challenge ||
-      !solution
-    ) {
+    // ✅ Basic validation
+    if (!title || !location || !description || !category) {
       return res.status(400).json({
         success: false,
-        message: "Please fill all required fields",
+        message: "Required fields missing",
       });
     }
 
@@ -44,91 +36,73 @@ export const addProject = async (req, res) => {
       });
     }
 
-    // ✅ Cloudinary URLs
+    // ✅ Cloudinary
     const heroImage = req.files.heroImage[0].path;
 
-    const gallery = req.files.gallery
-      ? req.files.gallery.map((file) => file.path)
+    const images = req.files.images
+      ? req.files.images.map((file) => file.path)
       : [];
 
     const newProject = new Project({
       title,
-      category,
-      projectType,
       location,
-      year,
-      client,
-      area,
-      service,
-      heroImage,
       description,
-      challenge,
-      solution,
-      gallery,
+      fullDescription,
+      status,
+      category,
+      heroImage,
+      images,
+      year,
+      area,
+      duration,
+      team,
+      features,
+      technologies,
+    
     });
 
     await newProject.save();
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Project added successfully",
       data: newProject,
     });
   } catch (error) {
-    console.log("ADD PROJECT ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    console.log("ADD ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// GET ALL PROJECTS
+
+
+// 🔥 GET ALL PROJECTS (with filter + pagination)
 export const getAllProjects = async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 6;
+    const status = req.query.status || "All";
     const category = req.query.category || "All";
-    const projectType = req.query.projectType || "All";
-
-    const skip = (page - 1) * limit;
 
     let filter = {};
 
-    if (category !== "All") {
-      filter.category = category;
-    }
+    if (status !== "All") filter.status = status;
+    if (category !== "All") filter.category = category;
 
-    if (projectType !== "All") {
-      filter.projectType = projectType;
-    }
+    const projects = await Project.find(filter).sort({ createdAt: -1 });
 
-    const totalProjects = await Project.countDocuments(filter);
-
-    const projects = await Project.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      message: "Projects fetched successfully",
-      currentPage: page,
-      totalPages: Math.ceil(totalProjects / limit),
-      totalProjects,
+      total: projects.length,
       data: projects,
     });
   } catch (error) {
-    console.log("GET ALL PROJECTS ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error while fetching projects",
-      error: error.message,
-    });
+    console.log("GET ALL ERROR:", error);
+    res.status(500).json({ success: false, message: "Error fetching" });
   }
 };
 
-// GET SINGLE PROJECT
+
+
+// 🔥 GET SINGLE PROJECT
 export const getSingleProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,28 +116,80 @@ export const getSingleProject = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      message: "Project fetched successfully",
       data: project,
     });
   } catch (error) {
-    console.log("GET SINGLE PROJECT ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error while fetching single project",
-      error: error.message,
-    });
+    console.log("GET SINGLE ERROR:", error);
+    res.status(500).json({ success: false, message: "Error fetching" });
   }
 };
 
-// DELETE PROJECT (🔥 Cloudinary + DB)
+
+
+// 🔥 UPDATE PROJECT
+export const updateProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const project = await Project.findById(id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    const updateData = req.body;
+
+    // 🔥 Replace hero image if new uploaded
+    if (req.files?.heroImage) {
+      const oldPublicId = project.heroImage.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(`gravity-images/${oldPublicId}`);
+
+      updateData.heroImage = req.files.heroImage[0].path;
+    }
+
+    // 🔥 Add new gallery images (optional)
+    let existingImages = [];
+
+if (req.body.existingImages) {
+  existingImages = JSON.parse(req.body.existingImages);
+}
+
+// new uploaded images
+let newImages = [];
+if (req.files?.images) {
+  newImages = req.files.images.map((file) => file.path);
+}
+
+// 🔥 FINAL images = remaining + new
+updateData.images = [...existingImages, ...newImages];
+
+    const updated = await Project.findByIdAndUpdate(id, updateData, {
+      returnDocument: "after",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    console.log("UPDATE ERROR:", error);
+    res.status(500).json({ success: false, message: "Error updating" });
+  }
+};
+
+
+
+// 🔥 DELETE PROJECT
 export const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
 
     const project = await Project.findById(id);
-
     if (!project) {
       return res.status(404).json({
         success: false,
@@ -173,35 +199,26 @@ export const deleteProject = async (req, res) => {
 
     // 🔥 Delete hero image
     if (project.heroImage) {
-      const publicId = project.heroImage
-        .split("/")
-        .slice(-1)[0]
-        .split(".")[0];
-
+      const publicId = project.heroImage.split("/").pop().split(".")[0];
       await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
     }
 
     // 🔥 Delete gallery images
-    if (project.gallery && project.gallery.length > 0) {
-      for (let img of project.gallery) {
-        const publicId = img.split("/").slice(-1)[0].split(".")[0];
-
+    if (project.images?.length > 0) {
+      for (let img of project.images) {
+        const publicId = img.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
       }
     }
 
     await Project.findByIdAndDelete(id);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      message: "Project deleted successfully",
+      message: "Deleted successfully",
     });
   } catch (error) {
-    console.log("DELETE PROJECT ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error while deleting project",
-      error: error.message,
-    });
+    console.log("DELETE ERROR:", error);
+    res.status(500).json({ success: false, message: "Error deleting" });
   }
 };

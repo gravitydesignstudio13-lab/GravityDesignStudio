@@ -22,7 +22,8 @@ import WhatsAppButton from './components/WhatsAppButton'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminAccess from './components/AdminAccess' // ✅ import
 import ErrorPage from './pages/ErrorPage'
-import AdminProjectTypePage from './pages/Admin/AdminProjectTypePage'
+import AdminHomeVideoPage from './pages/Admin/AdminHomeVideoPage'
+
 
 const App = () => {
   const location = useLocation();
@@ -62,7 +63,7 @@ const App = () => {
           <Route path='admininquery' element={<InquiryAdminPage />} />
           <Route path='adminreview' element={<AdminReviewPage />} />
           <Route path='adminteam' element={<AdminTeamPage />} />
-          <Route path="adminprojecttype" element={<AdminProjectTypePage />} />
+          <Route path="adminhomevideo" element={<AdminHomeVideoPage />} />
         </Route>
 
       </Routes>

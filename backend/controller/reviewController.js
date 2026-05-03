@@ -1,104 +1,93 @@
-import Review from "../model/reviewSchema.js";
-import cloudinary from "../config/cloudinary.js";
+import Review from "../model/reviewModel.js";
 
-// ADD REVIEW
+
+// ✅ ADD (NO IMAGE)
 export const addReview = async (req, res) => {
   try {
-    const { name, profession, message } = req.body;
+    const { name, description } = req.body;
 
-    if (!name || !profession || !message) {
-      return res.status(400).json({
+    if (!name || !description) {
+      return res.json({
         success: false,
-        message: "Please fill all fields",
+        message: "Name and description are required",
       });
     }
 
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Review image is required",
-      });
-    }
-
-    // ✅ Cloudinary URL
-    const image = req.file.path;
-
-    const newReview = new Review({
+    const review = new Review({
       name,
-      profession,
-      message,
-      image,
+      description,
     });
 
-    await newReview.save();
+    await review.save();
 
-    return res.status(201).json({
+    res.json({
       success: true,
-      message: "Review added successfully",
-      data: newReview,
+      message: "Review added",
+      data: review,
     });
   } catch (error) {
     console.log("ADD REVIEW ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while adding review",
-    });
+    res.status(500).json({ success: false });
   }
 };
 
-// GET REVIEWS
-export const getReviews = async (req, res) => {
-  try {
-    const reviews = await Review.find().sort({ createdAt: -1 });
 
-    return res.status(200).json({
+
+// ✅ GET
+export const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find().sort({ createdAt: 1 }); // optional change
+
+    res.json({
       success: true,
       data: reviews,
     });
   } catch (error) {
-    console.log("GET REVIEWS ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while fetching reviews",
-    });
+    console.log("GET REVIEW ERROR =", error);
+    res.status(500).json({ success: false });
   }
 };
 
-// DELETE REVIEW (Cloudinary + DB)
+
+
+// ✅ DELETE
 export const deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const review = await Review.findById(id);
-
-    if (!review) {
-      return res.status(404).json({
-        success: false,
-        message: "Review not found",
-      });
-    }
-
-    // 🔥 Delete from Cloudinary
-    if (review.image) {
-      const publicId = review.image
-        .split("/")
-        .slice(-1)[0]
-        .split(".")[0];
-
-      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
-    }
-
     await Review.findByIdAndDelete(id);
 
-    return res.status(200).json({
+    res.json({
       success: true,
-      message: "Review deleted successfully",
+      message: "Deleted",
     });
   } catch (error) {
     console.log("DELETE REVIEW ERROR =", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while deleting review",
+    res.status(500).json({ success: false });
+  }
+};
+
+
+
+// ✅ UPDATE (NO IMAGE)
+export const updateReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    const updated = await Review.findByIdAndUpdate(
+      id,
+      { name, description },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Updated",
+      data: updated,
     });
+  } catch (error) {
+    console.log("UPDATE REVIEW ERROR =", error);
+    res.status(500).json({ success: false });
   }
 };

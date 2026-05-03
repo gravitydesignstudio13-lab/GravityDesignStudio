@@ -3,29 +3,47 @@ import {
   addProject,
   getAllProjects,
   getSingleProject,
+  updateProject,
   deleteProject,
 } from "../controller/projectController.js";
-import Upload from "../middleware/uploadImage.js";
 
-const projectRouter = express.Router();
+import upload from "../middleware/uploadImage.js"; // 🔥 your multer config
 
-// add project
-projectRouter.post(
+const projectrouter = express.Router();
+
+
+// 🔥 ADD PROJECT (hero + multiple images)
+projectrouter.post(
   "/add",
-  Upload.fields([
+  upload.fields([
     { name: "heroImage", maxCount: 1 },
-    { name: "gallery", maxCount: 10 },
+    { name: "images", maxCount: 10 },
   ]),
   addProject
 );
 
-// get all projects
-projectRouter.get("/all", getAllProjects);
 
-// get single project
-projectRouter.get("/:id", getSingleProject);
+// 🔥 GET ALL PROJECTS
+projectrouter.get("/all", getAllProjects);
 
-// delete project
-projectRouter.delete("/delete/:id", deleteProject);
 
-export default projectRouter;
+// 🔥 GET SINGLE PROJECT
+projectrouter.get("/:id", getSingleProject);
+
+
+// 🔥 UPDATE PROJECT (optional images update)
+projectrouter.put(
+  "/update/:id",
+  upload.fields([
+    { name: "heroImage", maxCount: 1 },
+    { name: "images", maxCount: 10 },
+  ]),
+  updateProject
+);
+
+
+// 🔥 DELETE PROJECT
+projectrouter.delete("/delete/:id", deleteProject);
+
+
+export default projectrouter;

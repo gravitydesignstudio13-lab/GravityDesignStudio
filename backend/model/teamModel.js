@@ -5,21 +5,23 @@ const teamSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
     },
     role: {
       type: String,
-      required: true,
-      trim: true,
+      required: true, // make it required (recommended)
+
+    },
+    description: {
+      type: String,
     },
     image: {
-      type: String,
+      type: String, // Cloudinary URL
       required: true,
     },
   },
   { timestamps: true }
 );
 
-const Team = mongoose.model("Team", teamSchema);
+const Team=mongoose.model("Team", teamSchema);
 
-export default Team;
+export default Team

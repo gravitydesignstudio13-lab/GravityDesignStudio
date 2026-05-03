@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 
 const AdminPage = () => {
 
@@ -46,7 +46,7 @@ const AdminPage = () => {
     { to: "admininquery", label: "Inquiry", icon: MessageSquare },
     { to: "adminreview", label: "Reviews", icon: Star },
     { to: "adminteam", label: "Team", icon: Users },
-    { to: "adminprojecttype", label: "Project Types", icon: FolderPlus }
+    
   ];
 
   return (

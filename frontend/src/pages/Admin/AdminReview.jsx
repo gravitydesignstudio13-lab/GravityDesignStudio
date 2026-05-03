@@ -1,28 +1,23 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Formik, Form, Field } from "formik";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 
 const AdminReviewPage = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [editingReview, setEditingReview] = useState(null);
 
+  // ✅ GET REVIEWS
   const getReviews = async () => {
     try {
       setLoading(true);
-      const req = await axios.get(`${BACKEND_URL}/api/review/all`);
-
-      if (req?.data?.success) {
-        setReviews(req.data.data || []);
-      } else {
-        setReviews([]);
-      }
-    } catch (error) {
-      console.log("GET REVIEWS ERROR =", error);
+      const res = await axios.get(`${BACKEND_URL}/api/review/all`);
+      if (res.data.success) setReviews(res.data.data);
+    } catch {
       setReviews([]);
     } finally {
       setLoading(false);
@@ -33,181 +28,178 @@ const AdminReviewPage = () => {
     getReviews();
   }, []);
 
-  const handleDeleteReview = async (id) => {
-    const ok = window.confirm("Are you sure you want to delete this review?");
-    if (!ok) return;
+  // ✅ DELETE
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this review?")) return;
 
     try {
-      const req = await axios.delete(`${BACKEND_URL}/api/review/delete/${id}`);
-
-      if (req?.data?.success) {
-        toast.success(req.data.message || "Review deleted successfully");
-        getReviews();
-      }
-    } catch (error) {
-      console.log("DELETE REVIEW ERROR =", error);
-      toast.error(error?.response?.data?.message || "Failed to delete review");
+      await axios.delete(`${BACKEND_URL}/api/review/delete/${id}`);
+      toast.success("Deleted");
+      getReviews();
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* Add Review Form */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h1 className="text-2xl font-bold mb-5">Manage Reviews</h1>
+    <div className="space-y-10">
+
+      {/* FORM */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h1 className="text-2xl font-bold mb-6">
+          {editingReview ? "Edit Review" : "Add Review"}
+        </h1>
 
         <Formik
+          enableReinitialize
           initialValues={{
-            name: "",
-            profession: "",
-            message: "",
-            image: null,
+            name: editingReview?.name || "",
+            description: editingReview?.description || "",
           }}
-          onSubmit={async (values, { resetForm, setSubmitting, setFieldValue }) => {
+          onSubmit={async (values, { resetForm, setSubmitting }) => {
             try {
-              const formData = new FormData();
-              formData.append("name", values.name);
-              formData.append("profession", values.profession);
-              formData.append("message", values.message);
+              let res;
 
-              if (values.image) {
-                formData.append("image", values.image);
+              if (editingReview) {
+                // UPDATE
+                res = await axios.put(
+                  `${BACKEND_URL}/api/review/update/${editingReview._id}`,
+                  values
+                );
+              } else {
+                // ADD
+                res = await axios.post(
+                  `${BACKEND_URL}/api/review/add`,
+                  values
+                );
               }
 
-              const req = await axios.post(
-                `${BACKEND_URL}/api/review/add`,
-                formData,
-                {
-                  headers: {
-                    "Content-Type": "multipart/form-data",
-                  },
-                }
-              );
+              if (res.data.success) {
+                toast.success(editingReview ? "Updated" : "Added");
 
-              if (req?.data?.success) {
-                toast.success(req.data.message || "Review added successfully");
                 resetForm();
-                setFieldValue("image", null);
-
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = "";
-                }
-
+                setEditingReview(null);
                 getReviews();
               }
-            } catch (error) {
-              console.log("ADD REVIEW ERROR =", error);
-              toast.error(error?.response?.data?.message || "Failed to add review");
+            } catch {
+              toast.error("Action failed");
             } finally {
               setSubmitting(false);
             }
           }}
         >
-          {({ isSubmitting, setFieldValue }) => (
-            <Form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {({ isSubmitting }) => (
+            <Form className="grid md:grid-cols-2 gap-4">
+
               <Field
-                type="text"
                 name="name"
-                placeholder="Reviewer name"
-                className="border border-gray-300 rounded-xl px-4 py-3 outline-none"
+                placeholder="Reviewer Name"
+                className="border p-3 rounded-xl"
               />
 
               <Field
-                type="text"
-                name="profession"
-                placeholder="Reviewer profession"
-                className="border border-gray-300 rounded-xl px-4 py-3 outline-none"
-              />
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFieldValue("image", e.currentTarget.files[0])}
-                className="border border-gray-300 rounded-xl px-4 py-3 outline-none bg-white md:col-span-2"
-              />
-
-              <Field
-                as="textarea"
-                name="message"
-                placeholder="Review message"
-                className="border border-gray-300 rounded-xl px-4 py-3 outline-none md:col-span-2 h-32 resize-none"
+                name="description"
+                placeholder="Review Description"
+                className="border p-3 rounded-xl"
               />
 
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="bg-black text-white px-6 py-3 rounded-xl md:col-span-2 hover:bg-gray-800 transition disabled:opacity-50"
+                className="bg-[#7a4f1d] text-white py-3 rounded-xl md:col-span-2 hover:bg-[#5a3a12]"
               >
-                {isSubmitting ? "Adding..." : "Add Review"}
+                {isSubmitting
+                  ? "Saving..."
+                  : editingReview
+                  ? "Update Review"
+                  : "Add Review"}
               </button>
+
+              {editingReview && (
+                <button
+                  type="button"
+                  onClick={() => setEditingReview(null)}
+                  className="bg-gray-300 py-2 rounded-xl md:col-span-2"
+                >
+                  Cancel
+                </button>
+              )}
+
             </Form>
           )}
         </Formik>
       </div>
 
-      {/* Review Table */}
-      <div className="bg-white rounded-2xl shadow-sm p-6 overflow-x-auto">
-        <h2 className="text-2xl font-bold mb-5">All Reviews</h2>
+      {/* LIST */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-bold mb-4">Reviews</h2>
 
         {loading ? (
-          <p className="text-gray-500">Loading...</p>
+          <p>Loading...</p>
         ) : reviews.length === 0 ? (
-          <p className="text-gray-500">No reviews found</p>
+          <p>No reviews</p>
         ) : (
-          <table className="w-full min-w-[1000px] text-left border-collapse">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="py-4 px-4 font-semibold text-gray-700">SN</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Image</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Name</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Profession</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Message</th>
-                <th className="py-4 px-4 font-semibold text-gray-700">Action</th>
-              </tr>
-            </thead>
+          <div className="grid md:grid-cols-3 gap-5">
+            {reviews.map((item) => {
+              const firstLetter = item.name?.charAt(0).toUpperCase();
 
-            <tbody>
-              {reviews.map((item, index) => (
-                <tr key={item._id} className="border-b hover:bg-gray-50 transition">
-                  <td className="py-4 px-4 font-medium">{index + 1}</td>
+              return (
+               <div
+  key={item._id}
+  className="group bg-gradient-to-br from-white to-[#f8f6f2] rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
+>
+  {/* Avatar + Name */}
+  <div className="flex items-center gap-4 mb-4">
+    <div className="h-14 w-14 rounded-full flex items-center justify-center 
+      bg-gradient-to-br from-[#7a4f1d] to-[#c49a6c] 
+      text-white text-lg font-bold shadow-md">
+      {firstLetter}
+    </div>
 
-                  <td className="py-4 px-4">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="h-16 w-16 object-cover rounded-full"
-                    />
-                  </td>
+    <div>
+      <h3 className="font-semibold text-gray-800 text-lg">
+        {item.name}
+      </h3>
+      <p className="text-xs text-gray-400">Client</p>
+    </div>
+  </div>
 
-                  <td className="py-4 px-4 font-medium text-gray-800">
-                    {item.name}
-                  </td>
+  {/* Stars */}
+  <div className="flex text-[#7a4f1d] mb-3 text-sm tracking-wide">
+    {"★★★★★"}
+  </div>
 
-                  <td className="py-4 px-4 text-gray-700">
-                    {item.profession}
-                  </td>
+  {/* Review Text */}
+  <p className="text-gray-600 text-sm leading-relaxed italic line-clamp-3">
+    “{item.description}”
+  </p>
 
-                  <td className="py-4 px-4 text-gray-600 max-w-md">
-                    <p className="line-clamp-2">{item.message}</p>
-                  </td>
+  {/* Actions */}
+  <div className="flex gap-2 mt-5">
+    <button
+      onClick={() => {
+        setEditingReview(item);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+      className="flex-1 bg-[#7a4f1d] text-white py-2 rounded-lg text-sm hover:bg-[#5a3a12] transition"
+    >
+      Edit
+    </button>
 
-                  <td className="py-4 px-4">
-                    <button
-                      onClick={() => handleDeleteReview(item._id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <button
+      onClick={() => handleDelete(item._id)}
+      className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm hover:bg-red-600 transition"
+    >
+      Delete
+    </button>
+  </div>
+</div>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      <ToastContainer position="top-right" autoClose={2000} theme="colored" />
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };

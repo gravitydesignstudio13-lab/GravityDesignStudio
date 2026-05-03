@@ -1,23 +1,24 @@
-import express from 'express'
-import serviceRoute from './serviceRoute.js'
-import projectRouter from './projectRoutes.js'
-import galleryRouter from './galleryRoute.js'
-import inquiryRoute from './inqueryRoute.js'
-import reviewRoute from './reviewRoute.js'
-import teamRoute from './teamRoute.js'
-import adminRoute from './userRoute.js'
-import projectTypeRouter from './projectTypeRoute.js'
+import express from "express";
+import projectrouter from "./projectRoutes.js";
+import adminRoute from "./userRoute.js";
+import homeVideoRoute from "./homeVideoRoute.js";
+import teamroutes from "./teamRoutes.js";
+import reviewRouter from "./reviewRoutes.js";
+import inquiryRoute from "./inqueryRoute.js";
+import serviceRoute from "./serviceRoute.js";
+import galleryRouter from "./galleryRoute.js";
 
+const mainRoute = express.Router();
 
-
-const mainRoute=express.Router()
-
-mainRoute.use("/service",serviceRoute)
-mainRoute.use("/project",projectRouter)
+mainRoute.use("/project", projectrouter);
 mainRoute.use("/gallery",galleryRouter)
+mainRoute.use("/admin", adminRoute);
+mainRoute.use("/team", teamroutes);
 mainRoute.use("/inquiry",inquiryRoute)
-mainRoute.use("/review",reviewRoute)
-mainRoute.use("/team",teamRoute)
-mainRoute.use("/admin",adminRoute)
-mainRoute.use("/project-type",projectTypeRouter)
-export default mainRoute
+mainRoute.use("/review", reviewRouter);
+mainRoute.use("/service",serviceRoute)
+
+
+
+mainRoute.use("/homevideo", homeVideoRoute);
+export default mainRoute;

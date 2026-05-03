@@ -23,7 +23,7 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about" },
     { name: "Services", path: "/services" },
-    
+    {name:"Project", path:"/projects"},
     { name: "Gallery", path: "/gallery" },
     { name: "Contact", path: "/contact" },
   ];
@@ -39,7 +39,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-12 py-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <img className="h-12 sm:h-14 shrink-0" src={logo} alt="Logo" />
-            <h1 className="text-base sm:text-xl lg:text-2xl font-bold truncate">
+            <h1 className="font-logo text-base sm:text-xl lg:text-2xl font-bold ">
               Gravity Design Studio
             </h1>
           </div>

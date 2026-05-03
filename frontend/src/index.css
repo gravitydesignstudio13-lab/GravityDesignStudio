@@ -3,3 +3,6 @@
 html {
   scroll-behavior: smooth;
 }
+.font-logo {
+  font-family: 'Big Shoulders Display', sans-serif;
+}

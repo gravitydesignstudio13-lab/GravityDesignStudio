@@ -86,3 +86,52 @@ export const findService = async (req, res) => {
     });
   }
 };
+
+export const updateService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, detail } = req.body;
+
+    const service = await Service.findById(id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    // 🔥 If new image uploaded → delete old image
+    if (req.file && service.image) {
+      const publicId = service.image
+        .split("/")
+        .slice(-1)[0]
+        .split(".")[0];
+
+      await cloudinary.uploader.destroy(`gravity-images/${publicId}`);
+    }
+
+    // ✅ Update data
+    const updatedService = await Service.findByIdAndUpdate(
+      id,
+      {
+        title: title || service.title,
+        detail: detail || service.detail,
+        image: req.file ? req.file.path : service.image,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Service updated successfully",
+      data: updatedService,
+    });
+  } catch (error) {
+    console.log("updateService error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating service",
+    });
+  }
+};

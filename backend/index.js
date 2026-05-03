@@ -14,7 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const frontend = {
-  origin: "https://gravitydesignstudioo.netlify.app",
+  origin: [
+    "http://localhost:5173",
+    "https://gravitydesignstudioo.netlify.app"
+  ],
   credentials: true,
 };
 
@@ -26,6 +29,6 @@ app.get("/", (req, res) => {
 
 app.use("/api", mainRoute);
 
-app.listen(2000, () => {
+app.listen(2001, () => {
   console.log("server Running...");
 });

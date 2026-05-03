@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
@@ -8,67 +7,80 @@ const projectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    category: {
-      type: String,
-      required: true,
-      trim: true,
-      
-    },
-    projectType: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+
     location: {
       type: String,
       required: true,
       trim: true,
     },
-    year: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    client: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    area: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    service: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    heroImage: {
-      type: String,
-      required: true,
-    },
+
     description: {
       type: String,
       required: true,
       trim: true,
     },
-    challenge: {
+
+    fullDescription: {
       type: String,
-      required: true,
       trim: true,
     },
-    solution: {
+
+    status: {
+      type: String,
+      enum: ["Completed", "Ongoing", "Upcoming"],
+      default: "Completed",
+    },
+
+    category: {
       type: String,
       required: true,
-      trim: true,
     },
-    gallery: {
+
+    heroImage: {
+      type: String,
+      required: true,
+    },
+
+    images: {
       type: [String],
       default: [],
     },
+
+    year: {
+      type: String,
+      trim: true,
+    },
+
+    area: {
+      type: String,
+      trim: true,
+    },
+
+    duration: {
+      type: String,
+      trim: true,
+    },
+
+    team: {
+      type: [String],
+      default: [],
+    },
+
+    features: {
+      type: [String],
+      default: [],
+    },
+
+    technologies: {
+      type: [String],
+      default: [],
+    },
+
+    
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const Project = mongoose.model("Project", projectSchema);

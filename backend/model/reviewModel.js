@@ -5,22 +5,11 @@ const reviewSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
     },
-    profession: {
+    description: {
       type: String,
-      required: true,
-      trim: true,
-    },
-    message: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    image: {
-      type: String,
-      required: true,
-    },
+    }
+   
   },
   { timestamps: true }
 );
