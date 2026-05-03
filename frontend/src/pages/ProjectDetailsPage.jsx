@@ -40,8 +40,8 @@ const [currentIndex, setCurrentIndex] = useState(0);
       setLoading(true);
 
       const [singleRes, allRes] = await Promise.all([
-        axios.get(`http://localhost:2001/api/project/${id}`),
-        axios.get(`http://localhost:2001/api/project/all`)
+        axios.get(`${BACKEND_URL}/api/project/${id}`),
+        axios.get(`${BACKEND_URL}/api/project/all`)
       ]);
 
       if (singleRes.data.success) {

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-
+const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 const ProjectsPage = () => {
   const nav = useNavigate();
 const [projects, setProjects] = useState([]);
@@ -53,7 +53,7 @@ useEffect(() => {
       setLoading(true);
 
       const res = await axios.get(
-        "http://localhost:2001/api/project/all"
+        `${BACKEND_URL}/api/project/all`
       );
 
       if (res.data.success) {
