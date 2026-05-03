@@ -354,33 +354,7 @@ const handlePrev = () => {
               </motion.div>
             )}
 
-            {/* Testimonial */}
-            {project.clientTestimonial && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-[#f5f0e8] rounded-2xl p-6 border border-gray-200"
-              >
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 italic leading-relaxed">
-                  "{project.clientTestimonial.text}"
-                </p>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#7a4f1d]/20 flex items-center justify-center">
-                    <User size={18} className="text-[#7a4f1d]" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">{project.clientTestimonial.name}</p>
-                    <p className="text-xs text-gray-500">Client</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+            
           </div>
 
           {/* Right Column - Sidebar */}
