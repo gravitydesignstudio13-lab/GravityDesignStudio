@@ -3,10 +3,24 @@ import cloudinary from "../config/cloudinary.js";
 
 export const addCategory = async (req, res) => {
   try {
-    const { category } = req.body;
+    console.log("===== DEBUG START =====");
 
     console.log("BODY =", req.body);
     console.log("FILE =", req.file);
+
+    if (!req.file) {
+      console.log("❌ NO FILE RECEIVED");
+    } else {
+      console.log("✅ FILE RECEIVED:", JSON.stringify(req.file, null, 2));
+    }
+
+    if (!req.body.category) {
+      console.log("❌ NO CATEGORY");
+    }
+
+    console.log("===== DEBUG END =====");
+
+    const { category } = req.body;
 
     if (!category) {
       return res.status(400).json({
@@ -22,9 +36,11 @@ export const addCategory = async (req, res) => {
       });
     }
 
+    const imageUrl = req.file.path || req.file.secure_url;
+
     const newCategory = new Gallery({
       category,
-      iimage: req.file.path || req.file.secure_url, // ✅ Cloudinary URL
+      image: imageUrl,
     });
 
     await newCategory.save();
@@ -36,9 +52,7 @@ export const addCategory = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("ADD GALLERY FULL ERROR =", error);
-    console.log("ADD GALLERY ERROR MESSAGE =", error.message);
-
+    console.log("❌ ERROR =", error);
     return res.status(500).json({
       success: false,
       message: error.message,
