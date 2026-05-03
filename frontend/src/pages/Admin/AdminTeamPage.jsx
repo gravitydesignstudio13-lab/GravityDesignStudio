@@ -16,12 +16,25 @@ import * as Yup from "yup";
 
 const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 
+// Image size validation helper
+const validateImageSize = (file, maxSizeMB = 10) => {
+  const maxSizeInBytes = maxSizeMB * 1024 * 1024;
+  if (file && file.size > maxSizeInBytes) {
+    return {
+      isValid: false,
+      error: `Image size must be less than ${maxSizeMB} MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`
+    };
+  }
+  return { isValid: true, error: null };
+};
+
 const AdminTeamPage = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageError, setImageError] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -72,6 +85,7 @@ const AdminTeamPage = () => {
       setEditingMember(null);
       setPreview(null);
     }
+    setImageError(null);
     setIsModalOpen(true);
   };
 
@@ -79,6 +93,10 @@ const AdminTeamPage = () => {
     setIsModalOpen(false);
     setEditingMember(null);
     setPreview(null);
+    setImageError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -211,6 +229,16 @@ const AdminTeamPage = () => {
                 validationSchema={validationSchema}
                 onSubmit={async (values, { resetForm, setSubmitting }) => {
                   try {
+                    // Validate image size if a new image is being uploaded
+                    if (values.image) {
+                      const validation = validateImageSize(values.image);
+                      if (!validation.isValid) {
+                        toast.error(validation.error);
+                        setSubmitting(false);
+                        return;
+                      }
+                    }
+
                     const formData = new FormData();
                     formData.append("name", values.name);
                     formData.append("role", values.role);
@@ -253,7 +281,7 @@ const AdminTeamPage = () => {
                 {({ setFieldValue, isSubmitting, errors, touched }) => (
                   <Form className="p-6 space-y-4">
                     {/* Image Upload */}
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center">
                       <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden border-2 border-gray-200">
                           {(preview || editingMember?.image) ? (
@@ -283,12 +311,33 @@ const AdminTeamPage = () => {
                           onChange={(e) => {
                             const file = e.target.files[0];
                             if (file) {
+                              // Validate image size on selection
+                              const validation = validateImageSize(file);
+                              if (!validation.isValid) {
+                                setImageError(validation.error);
+                                setFieldValue("image", null);
+                                setPreview(null);
+                                e.target.value = "";
+                                return;
+                              }
+                              
+                              setImageError(null);
                               setFieldValue("image", file);
                               setPreview(URL.createObjectURL(file));
                             }
                           }}
                         />
                       </div>
+                      
+                      {/* Image validation error message */}
+                      {imageError && (
+                        <p className="text-red-500 text-xs mt-2 text-center">{imageError}</p>
+                      )}
+                      
+                      {/* Helper text */}
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        Max file size: 10 MB
+                      </p>
                     </div>
 
                     {/* Name Field */}

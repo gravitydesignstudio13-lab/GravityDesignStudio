@@ -3,15 +3,15 @@ import axios from "axios";
 import { Formik, Form, Field } from "formik";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { 
-  Plus, 
-  Trash2, 
-  Upload, 
+import {
+  Plus,
+  Trash2,
+  Upload,
   Image,
   X,
   Folder,
   Images,
-  Eye
+  Eye,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,7 +39,7 @@ const AdminGalleryPage = () => {
     try {
       setLoading(true);
       const req = await axios.get(
-        `${BACKEND_URL}/api/gallery/all?page=1&limit=100&category=All`
+        `${BACKEND_URL}/api/gallery/all?page=1&limit=100&category=All`,
       );
       if (req?.data?.success) {
         setGallery(req.data.data || []);
@@ -77,7 +77,6 @@ const AdminGalleryPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -85,7 +84,9 @@ const AdminGalleryPage = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                 Gallery Management
               </h1>
-              <p className="text-gray-500 mt-2">Upload and manage your gallery images</p>
+              <p className="text-gray-500 mt-2">
+                Upload and manage your gallery images
+              </p>
             </div>
             <div className="bg-white rounded-full p-3 shadow-md">
               <Images className="w-6 h-6 text-gray-700" />
@@ -99,7 +100,9 @@ const AdminGalleryPage = () => {
             <div className="bg-gradient-to-r from-[#7a5703] to-[#5c3f02] px-6 py-4">
               <div className="flex items-center gap-3">
                 <Plus className="w-5 h-5 text-white" />
-                <h2 className="text-xl font-semibold text-white">Add New Gallery Image</h2>
+                <h2 className="text-xl font-semibold text-white">
+                  Add New Gallery Image
+                </h2>
               </div>
             </div>
 
@@ -109,7 +112,10 @@ const AdminGalleryPage = () => {
                   category: "",
                   image: null,
                 }}
-                onSubmit={async (values, { resetForm, setSubmitting, setFieldValue }) => {
+                onSubmit={async (
+                  values,
+                  { resetForm, setSubmitting, setFieldValue },
+                ) => {
                   try {
                     const formData = new FormData();
                     formData.append("category", values.category);
@@ -120,7 +126,7 @@ const AdminGalleryPage = () => {
                     const req = await axios.post(
                       `${BACKEND_URL}/api/gallery/add`,
                       formData,
-                      { headers: { "Content-Type": "multipart/form-data" } }
+                      { headers: { "Content-Type": "multipart/form-data" } },
                     );
 
                     if (req?.data?.success) {
@@ -147,7 +153,8 @@ const AdminGalleryPage = () => {
                       {/* Category Selection */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          <Folder className="w-4 h-4 inline mr-1" /> Select Category *
+                          <Folder className="w-4 h-4 inline mr-1" /> Select
+                          Category *
                         </label>
                         <Field
                           as="select"
@@ -155,18 +162,20 @@ const AdminGalleryPage = () => {
                           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#7a5703] focus:border-transparent transition outline-none bg-white"
                         >
                           <option value="">Choose a category</option>
-                          {Array.isArray(services) && services.map((item) => (
-                            <option key={item._id} value={item.title}>
-                              {item.title}
-                            </option>
-                          ))}
+                          {Array.isArray(services) &&
+                            services.map((item) => (
+                              <option key={item._id} value={item.title}>
+                                {item.title}
+                              </option>
+                            ))}
                         </Field>
                       </div>
 
                       {/* Image Upload */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          <Image className="w-4 h-4 inline mr-1" /> Upload Image *
+                          <Image className="w-4 h-4 inline mr-1" /> Upload Image
+                          *
                         </label>
                         <div className="flex items-center gap-4">
                           <div className="flex-1">
@@ -176,6 +185,28 @@ const AdminGalleryPage = () => {
                               accept="image/*"
                               onChange={(e) => {
                                 const file = e.currentTarget.files[0];
+
+                                if (!file) return;
+
+                                // ✅ 10MB limit
+                                const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
+                                if (file.size > MAX_SIZE) {
+                                  toast.error(
+                                    "Image size must be less than 10MB ❌",
+                                  );
+
+                                  // clear input
+                                  if (fileInputRef.current) {
+                                    fileInputRef.current.value = "";
+                                  }
+
+                                  setFieldValue("image", null);
+                                  setPreview(null);
+                                  return;
+                                }
+
+                                // ✅ valid file
                                 setFieldValue("image", file);
                                 setPreview(URL.createObjectURL(file));
                               }}
@@ -192,7 +223,7 @@ const AdminGalleryPage = () => {
                               </span>
                             </label>
                           </div>
-                          
+
                           {/* Preview */}
                           {preview && (
                             <div className="relative">
@@ -246,11 +277,17 @@ const AdminGalleryPage = () => {
         <div>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">Gallery Images</h2>
-              <p className="text-gray-500 mt-1">{gallery.length} images total</p>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Gallery Images
+              </h2>
+              <p className="text-gray-500 mt-1">
+                {gallery.length} images total
+              </p>
             </div>
             <div className="bg-[#f3e9d2] rounded-full px-4 py-2">
-              <span className="text-[#7a5703] font-semibold">{gallery.length}</span>
+              <span className="text-[#7a5703] font-semibold">
+                {gallery.length}
+              </span>
             </div>
           </div>
 
@@ -262,8 +299,12 @@ const AdminGalleryPage = () => {
           ) : gallery.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
               <Images className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No images yet</h3>
-              <p className="text-gray-400">Upload your first gallery image above</p>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                No images yet
+              </h3>
+              <p className="text-gray-400">
+                Upload your first gallery image above
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -276,7 +317,7 @@ const AdminGalleryPage = () => {
                   className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
                 >
                   {/* Image */}
-                  <div 
+                  <div
                     className="relative aspect-square overflow-hidden cursor-pointer bg-gray-100"
                     onClick={() => setSelectedImage(item)}
                   >
@@ -285,7 +326,7 @@ const AdminGalleryPage = () => {
                       alt={item.category}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 pointer-events-none"
                     />
-                    
+
                     {/* Category Badge */}
                     <div className="absolute top-3 left-3 bg-[#7a4f1d]/90 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full z-10">
                       {item.category}
@@ -303,7 +344,9 @@ const AdminGalleryPage = () => {
                     {/* Overlay - Now behind buttons */}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 z-0 pointer-events-none">
                       <Eye className="w-5 h-5 text-white" />
-                      <span className="text-white text-sm font-medium">Click to view</span>
+                      <span className="text-white text-sm font-medium">
+                        Click to view
+                      </span>
                     </div>
                   </div>
 
@@ -312,7 +355,6 @@ const AdminGalleryPage = () => {
                     <p className="text-sm text-gray-600 truncate font-medium">
                       {item.category}
                     </p>
-                    
                   </div>
                 </motion.div>
               ))}
@@ -344,13 +386,13 @@ const AdminGalleryPage = () => {
                   >
                     <X className="w-8 h-8" />
                   </button>
-                  
+
                   <img
                     src={selectedImage.image}
                     alt={selectedImage.category}
                     className="w-full h-auto rounded-2xl shadow-2xl"
                   />
-                  
+
                   <div className="mt-4 text-center">
                     <span className="inline-block px-3 py-1 bg-[#7a4f1d] text-white text-sm rounded-full">
                       {selectedImage.category}
@@ -362,7 +404,7 @@ const AdminGalleryPage = () => {
           )}
         </AnimatePresence>
 
-        <ToastContainer 
+        <ToastContainer
           position="top-right"
           autoClose={3000}
           newestOnTop

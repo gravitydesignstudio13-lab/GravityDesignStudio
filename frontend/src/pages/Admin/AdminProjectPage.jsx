@@ -20,11 +20,13 @@ import {
   UserMinus,
   Plus as PlusIcon,
 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api/project`,
 });
-
 
 const projectValidationSchema = Yup.object({
   title: Yup.string().required('Title is required'),
@@ -39,8 +41,19 @@ const projectValidationSchema = Yup.object({
   team: Yup.array().of(Yup.string()),
   features: Yup.array().of(Yup.string()),
   technologies: Yup.array().of(Yup.string()),
- 
 });
+
+// Image size validation helper
+const validateImageSize = (file, maxSizeMB = 10) => {
+  const maxSizeInBytes = maxSizeMB * 1024 * 1024;
+  if (file && file.size > maxSizeInBytes) {
+    return {
+      isValid: false,
+      error: `Image size must be less than ${maxSizeMB} MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`
+    };
+  }
+  return { isValid: true, error: null };
+};
 
 const AdminProjects = () => {
   const [projects, setProjects] = useState([]);
@@ -60,9 +73,12 @@ const AdminProjects = () => {
   const [formSuccess, setFormSuccess] = useState(null);
 
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-const filteredProjects = projects.filter((project) =>
-  project.title.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const filteredProjects = projects.filter((project) =>
+    project.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const fetchProjects = async () => {
     setLoading(true);
     setError(null);
@@ -102,13 +118,20 @@ const filteredProjects = projects.filter((project) =>
 
   const handleDelete = async () => {
     if (!deleteConfirm) return;
-
+    
+    setIsDeleting(true);
+    
     try {
       await api.delete(`/delete/${deleteConfirm}`);
+      toast.success('Project deleted successfully!');
       setDeleteConfirm(null);
-      fetchProjects();
+      await fetchProjects();
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      const errorMsg = err.response?.data?.message || err.message;
+      toast.error(errorMsg);
+      setError(errorMsg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -138,33 +161,46 @@ const filteredProjects = projects.filter((project) =>
     setFormSuccess(null);
 
     try {
+      // Validate hero image size if present
+      if (files.heroImage) {
+        const heroValidation = validateImageSize(files.heroImage);
+        if (!heroValidation.isValid) {
+          setFormError(heroValidation.error);
+          toast.error(heroValidation.error);
+          setFormLoading(false);
+          return;
+        }
+      }
+
+      // Validate each gallery image size
+      if (files.images && files.images.length) {
+        for (let i = 0; i < files.images.length; i++) {
+          const galleryValidation = validateImageSize(files.images[i]);
+          if (!galleryValidation.isValid) {
+            const errorMsg = `Gallery image ${i + 1}: ${galleryValidation.error}`;
+            setFormError(errorMsg);
+            toast.error(errorMsg);
+            setFormLoading(false);
+            return;
+          }
+        }
+      }
+
       const formData = new FormData();
 
       Object.keys(values).forEach((key) => {
-
-  if (Array.isArray(values[key])) {
-
-    values[key].forEach((item) => {
-
-      if (item.trim()) formData.append(key, item.trim());
-
-    });
-
-  } else if (
-
-    values[key] !== undefined &&
-
-    values[key] !== null &&
-
-    values[key] !== ''
-
-  ) {
-
-    formData.append(key, values[key]);
-
-  }
-
-});
+        if (Array.isArray(values[key])) {
+          values[key].forEach((item) => {
+            if (item.trim()) formData.append(key, item.trim());
+          });
+        } else if (
+          values[key] !== undefined &&
+          values[key] !== null &&
+          values[key] !== ''
+        ) {
+          formData.append(key, values[key]);
+        }
+      });
 
       if (files.heroImage) {
         formData.append('heroImage', files.heroImage);
@@ -180,8 +216,18 @@ const filteredProjects = projects.filter((project) =>
 
       if (editingProject) {
         response = await api.put(`/update/${editingProject._id}`, formData);
+        if (response.data.success) {
+          toast.success('Project updated successfully!');
+        } else {
+          throw new Error(response.data.message);
+        }
       } else {
         response = await api.post('/add', formData);
+        if (response.data.success) {
+          toast.success('Project created successfully!');
+        } else {
+          throw new Error(response.data.message);
+        }
       }
 
       if (response.data.success) {
@@ -196,7 +242,9 @@ const filteredProjects = projects.filter((project) =>
         throw new Error(response.data.message);
       }
     } catch (err) {
-      setFormError(err.response?.data?.message || err.message);
+      const errorMsg = err.response?.data?.message || err.message;
+      setFormError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setFormLoading(false);
     }
@@ -204,6 +252,19 @@ const filteredProjects = projects.filter((project) =>
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
@@ -235,7 +296,6 @@ const filteredProjects = projects.filter((project) =>
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
@@ -447,16 +507,25 @@ const filteredProjects = projects.filter((project) =>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                 >
-                  Delete
+                  {isDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
                 </button>
               </div>
             </motion.div>
@@ -473,6 +542,8 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
   const [heroPreview, setHeroPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
+  const [heroError, setHeroError] = useState(null);
+  const [galleryErrors, setGalleryErrors] = useState([]);
 
   const formik = useFormik({
     initialValues: {
@@ -488,7 +559,6 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
       team: [''],
       features: [''],
       technologies: [''],
-     
     },
     validationSchema: projectValidationSchema,
     onSubmit: (values) => {
@@ -523,7 +593,6 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
         team: project.team?.length ? project.team : [''],
         features: project.features?.length ? project.features : [''],
         technologies: project.technologies?.length ? project.technologies : [''],
-       
       });
 
       setHeroPreview(project.heroImage || null);
@@ -531,6 +600,8 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
       setGalleryPreviews(project.images || []);
       setGalleryFiles([]);
       setHeroFile(null);
+      setHeroError(null);
+      setGalleryErrors([]);
     } else {
       formik.resetForm();
       setHeroPreview(null);
@@ -538,6 +609,8 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
       setGalleryFiles([]);
       setExistingImages([]);
       setHeroFile(null);
+      setHeroError(null);
+      setGalleryErrors([]);
     }
   }, [project]);
 
@@ -559,8 +632,18 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
 
   const handleHeroChange = (e) => {
     const file = e.target.files[0];
+    setHeroError(null);
 
     if (file) {
+      const validation = validateImageSize(file);
+      if (!validation.isValid) {
+        setHeroError(validation.error);
+        setHeroFile(null);
+        setHeroPreview(null);
+        e.target.value = '';
+        return;
+      }
+
       setHeroFile(file);
       setHeroPreview(URL.createObjectURL(file));
     }
@@ -568,11 +651,28 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
 
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files);
+    const newErrors = [];
+    const validFiles = [];
 
-    setGalleryFiles((prev) => [...prev, ...files]);
+    files.forEach((file, index) => {
+      const validation = validateImageSize(file);
+      if (!validation.isValid) {
+        newErrors.push(`Image ${index + 1}: ${validation.error}`);
+      } else {
+        validFiles.push(file);
+      }
+    });
 
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setGalleryPreviews((prev) => [...prev, ...previews]);
+    if (newErrors.length > 0) {
+      setGalleryErrors((prev) => [...prev, ...newErrors]);
+      setTimeout(() => setGalleryErrors((prev) => prev.filter((_, i) => i !== 0)), 3000);
+    }
+
+    if (validFiles.length > 0) {
+      setGalleryFiles((prev) => [...prev, ...validFiles]);
+      const previews = validFiles.map((file) => URL.createObjectURL(file));
+      setGalleryPreviews((prev) => [...prev, ...previews]);
+    }
 
     e.target.value = '';
   };
@@ -668,11 +768,11 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="Interior Design">Interior Design</option>
-                  <option value="Architecture Design">Architecture Design</option>
-                  <option value="3D Visualization">3D Visualization</option>
-                  <option value="Renovation">Renovation</option>
-                  <option value="Furniture Design">Furniture Design</option>
-                  <option value="Space Planning">Space Planning</option>
+                    <option value="Architecture Design">Architecture Design</option>
+                    <option value="3D Visualization">3D Visualization</option>
+                    <option value="Renovation">Renovation</option>
+                    <option value="Furniture Design">Furniture Design</option>
+                    <option value="Space Planning">Space Planning</option>
                   </select>
                 </div>
 
@@ -872,14 +972,12 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-
-              
             </div>
 
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hero Image *
+                  Hero Image * (Max 10MB)
                 </label>
 
                 <div className="flex items-center gap-4">
@@ -911,6 +1009,7 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
                       onClick={() => {
                         setHeroFile(null);
                         setHeroPreview(null);
+                        setHeroError(null);
                       }}
                       className="text-red-500 text-sm"
                     >
@@ -918,11 +1017,16 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
                     </button>
                   )}
                 </div>
+
+                {heroError && (
+                  <p className="text-red-500 text-xs mt-2">{heroError}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">Maximum file size: 10 MB</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gallery Images
+                  Gallery Images (Max 10MB each)
                 </label>
 
                 <div className="flex flex-wrap gap-3 mb-3">
@@ -960,6 +1064,15 @@ const ProjectFormModal = ({ project, onSubmit, onClose, loading, error, success 
                     />
                   </label>
                 </div>
+
+                {galleryErrors.length > 0 && (
+                  <div className="space-y-1">
+                    {galleryErrors.map((err, idx) => (
+                      <p key={idx} className="text-red-500 text-xs">{err}</p>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-1">Each image must be less than 10 MB</p>
               </div>
             </div>
 

@@ -14,12 +14,25 @@ import {
 
 const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 
+// Image size validation helper
+const validateImageSize = (file, maxSizeMB = 10) => {
+  const maxSizeInBytes = maxSizeMB * 1024 * 1024;
+  if (file && file.size > maxSizeInBytes) {
+    return {
+      isValid: false,
+      error: `Image size must be less than ${maxSizeMB} MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`
+    };
+  }
+  return { isValid: true, error: null };
+};
+
 const AdminServicePage = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageError, setImageError] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -54,6 +67,7 @@ const AdminServicePage = () => {
   const openAddModal = () => {
     setEditingService(null);
     setPreview(null);
+    setImageError(null);
     setIsModalOpen(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -63,6 +77,7 @@ const AdminServicePage = () => {
   const openEditModal = (service) => {
     setEditingService(service);
     setPreview(service.image);
+    setImageError(null);
     setIsModalOpen(true);
   };
 
@@ -70,6 +85,7 @@ const AdminServicePage = () => {
     setIsModalOpen(false);
     setEditingService(null);
     setPreview(null);
+    setImageError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -205,6 +221,16 @@ const AdminServicePage = () => {
                       }}
                       onSubmit={async (values, { resetForm, setSubmitting }) => {
                         try {
+                          // Validate image size if a new image is being uploaded
+                          if (values.image) {
+                            const validation = validateImageSize(values.image);
+                            if (!validation.isValid) {
+                              toast.error(validation.error);
+                              setSubmitting(false);
+                              return;
+                            }
+                          }
+
                           const formData = new FormData();
                           formData.append("title", values.title);
                           formData.append("detail", values.detail);
@@ -273,7 +299,7 @@ const AdminServicePage = () => {
                           {/* Image Upload */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Service Image
+                              Service Image * (Max 10MB)
                             </label>
                             <div className="flex items-center gap-4 flex-wrap">
                               <div className="flex-1 min-w-[150px]">
@@ -284,6 +310,17 @@ const AdminServicePage = () => {
                                   onChange={(e) => {
                                     const file = e.currentTarget.files[0];
                                     if (file) {
+                                      // Validate image size on selection
+                                      const validation = validateImageSize(file);
+                                      if (!validation.isValid) {
+                                        setImageError(validation.error);
+                                        setFieldValue("image", null);
+                                        setPreview(null);
+                                        e.currentTarget.value = "";
+                                        return;
+                                      }
+                                      
+                                      setImageError(null);
                                       setFieldValue("image", file);
                                       setPreview(URL.createObjectURL(file));
                                     }
@@ -315,6 +352,7 @@ const AdminServicePage = () => {
                                     onClick={() => {
                                       setPreview(null);
                                       setFieldValue("image", null);
+                                      setImageError(null);
                                       if (fileInputRef.current) {
                                         fileInputRef.current.value = "";
                                       }
@@ -326,6 +364,16 @@ const AdminServicePage = () => {
                                 </div>
                               )}
                             </div>
+                            
+                            {/* Image validation error message */}
+                            {imageError && (
+                              <p className="text-red-500 text-xs mt-2">{imageError}</p>
+                            )}
+                            
+                            {/* Helper text */}
+                            <p className="text-xs text-gray-500 mt-2">
+                              Maximum file size: 10 MB. Supported formats: JPG, PNG, GIF, WebP
+                            </p>
                           </div>
 
                           {/* Modal Buttons */}
