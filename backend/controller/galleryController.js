@@ -24,7 +24,7 @@ export const addCategory = async (req, res) => {
 
     const newCategory = new Gallery({
       category,
-      image: req.file.path, // ✅ Cloudinary URL
+      iimage: req.file.path || req.file.secure_url, // ✅ Cloudinary URL
     });
 
     await newCategory.save();
