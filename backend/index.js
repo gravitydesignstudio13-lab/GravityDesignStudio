@@ -17,6 +17,7 @@ const frontend = {
   origin: [
     "http://localhost:5173",
     "https://gravitydesignstudio001.netlify.app",
+    "https://www.gravitydesignstudio.com.np",
   ],
   credentials: true,
 };
