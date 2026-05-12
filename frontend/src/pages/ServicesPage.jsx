@@ -33,30 +33,8 @@ const CountUp = ({ to, suffix = "" }) => {
 
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
-  const [projects, setProjects] = useState([]);
+  const [galleryItems, setGalleryItems] = useState([]);
   const nav = useNavigate();
-
-  const getCategoryGroup = (title = "") => {
-    const lowerTitle = title.toLowerCase();
-
-    if (lowerTitle.includes("interior")) return "interior";
-    if (
-      lowerTitle.includes("architecture") ||
-      lowerTitle.includes("architect") ||
-      lowerTitle.includes("exterior")
-    ) {
-      return "architecture";
-    }
-    if (
-      lowerTitle.includes("3d") ||
-      lowerTitle.includes("visualization") ||
-      lowerTitle.includes("render")
-    ) {
-      return "3d";
-    }
-
-    return "";
-  };
 
   const getServices = async () => {
     try {
@@ -75,36 +53,58 @@ const ServicesPage = () => {
     }
   };
 
-  const getProjects = async () => {
+  const getGalleryItems = async () => {
     try {
-      const res = await axios.get(
-        `${BACKEND_URL}/api/project/all?page=1&limit=500`
-      );
+      const res = await axios.get(`${BACKEND_URL}/api/gallery/all`);
 
       if (res?.data?.success) {
-        setProjects(res.data.data || []);
+        setGalleryItems(res.data.data || []);
+      } else if (Array.isArray(res.data)) {
+        setGalleryItems(res.data);
       } else {
-        setProjects([]);
+        setGalleryItems([]);
       }
     } catch (error) {
       console.log(error?.response?.data?.message || error.message);
-      setProjects([]);
+      setGalleryItems([]);
     }
+  };
+
+  // Direct check if service title matches any gallery category
+  const hasGalleryItemsForService = (serviceTitle) => {
+    if (!serviceTitle || galleryItems.length === 0) return false;
+    
+    // Convert service title to lowercase for case-insensitive comparison
+    const serviceTitleLower = serviceTitle.toLowerCase().trim();
+    
+    // Check if any gallery item has a category that matches the service title
+    return galleryItems.some((item) => {
+      const itemCategory = (item.category || "").toLowerCase().trim();
+      // Direct match between service title and gallery category
+      return itemCategory === serviceTitleLower || 
+             serviceTitleLower.includes(itemCategory) ||
+             itemCategory.includes(serviceTitleLower);
+    });
+  };
+
+  const handleServiceClick = (serviceTitle) => {
+    const hasItems = hasGalleryItemsForService(serviceTitle);
+    if (!hasItems) return;
+    
+    // Navigate to gallery page with the service title as category filter
+    nav(`/gallery?category=${encodeURIComponent(serviceTitle)}`);
   };
 
   useEffect(() => {
     getServices();
-    getProjects();
+    getGalleryItems();
   }, []);
 
   const stats = [
     { number: 150, suffix: "+", label: "Projects Completed" },
-
-  { number: 500, suffix: "+", label: "Design Consultations" },
-
-  { number: 98, suffix: "%", label: "Client Satisfaction" },
-
-  { number: 10, suffix: "+", label: "Years Experience" },
+    { number: 500, suffix: "+", label: "Design Consultations" },
+    { number: 98, suffix: "%", label: "Client Satisfaction" },
+    { number: 10, suffix: "+", label: "Years Experience" },
   ];
 
   const processSteps = [
@@ -131,7 +131,7 @@ const ServicesPage = () => {
     {
       step: "03",
       title: "Development",
-      description: "During development, designers focus on spatial planning, structural considerations, material selection, and integration of systems such as lighting, ventilation, and sustainability features. Iterative testing, modeling, and analysis help ensure that the design is both feasible and aligned with the project’s vision.",
+      description: "During development, designers focus on spatial planning, structural considerations, material selection, and integration of systems such as lighting, ventilation, and sustainability features. Iterative testing, modeling, and analysis help ensure that the design is both feasible and aligned with the project's vision.",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
@@ -150,24 +150,19 @@ const ServicesPage = () => {
     },
   ];
 
-  const hasProjectsForService = (serviceTitle) => {
-    const serviceGroup = getCategoryGroup(serviceTitle);
-    if (!serviceGroup) return false;
-    return projects.some(
-      (project) => getCategoryGroup(project.category) === serviceGroup
-    );
-  };
-
-  const handleServiceClick = (serviceTitle) => {
-    const categoryGroup = getCategoryGroup(serviceTitle);
-    const hasProjects = hasProjectsForService(serviceTitle);
-    if (!categoryGroup || !hasProjects) return;
-    nav(
-      `/projects?group=${encodeURIComponent(
-        categoryGroup
-      )}&label=${encodeURIComponent(serviceTitle)}`
-    );
-  };
+  // Debug logging to check what's being fetched
+  useEffect(() => {
+    if (services.length > 0 && galleryItems.length > 0) {
+      console.log("Services:", services.map(s => ({ title: s.title, id: s._id })));
+      console.log("Gallery Items:", galleryItems.map(g => ({ category: g.category, id: g._id })));
+      
+      // Check which services have matching gallery items
+      services.forEach(service => {
+        const hasMatch = hasGalleryItemsForService(service.title);
+        console.log(`Service "${service.title}" has gallery items: ${hasMatch}`);
+      });
+    }
+  }, [services, galleryItems]);
 
   return (
     <div className="bg-white text-gray-900">
@@ -251,7 +246,7 @@ const ServicesPage = () => {
 
           <div className="space-y-20">
             {services.map((service, index) => {
-              const hasProjects = hasProjectsForService(service.title);
+              const hasGalleryMatch = hasGalleryItemsForService(service.title);
               const isEven = index % 2 === 0;
 
               return (
@@ -269,22 +264,22 @@ const ServicesPage = () => {
                   <div className="relative">
                     <div className="absolute -inset-2 bg-gradient-to-r from-[#7a4f1d]/20 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
                     <div
-                      onClick={() => hasProjects && handleServiceClick(service.title)}
+                      onClick={() => hasGalleryMatch && handleServiceClick(service.title)}
                       className={`relative overflow-hidden rounded-3xl shadow-xl group ${
-                        hasProjects ? "cursor-pointer" : "cursor-default"
+                        hasGalleryMatch ? "cursor-pointer" : "cursor-default"
                       }`}
                     >
                       <img
                         src={service.image}
                         alt={service.title}
                         className={`w-full h-[300px] sm:h-[380px] lg:h-[450px] object-cover transition duration-700 ${
-                          hasProjects ? "group-hover:scale-105" : ""
+                          hasGalleryMatch ? "group-hover:scale-105" : ""
                         }`}
                       />
-                      {hasProjects && (
+                      {hasGalleryMatch && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
                           <span className="text-white text-base font-medium border-2 border-white px-6 py-2.5 rounded-full hover:bg-white hover:text-gray-900 transition">
-                            View Projects
+                            View Gallery
                           </span>
                         </div>
                       )}
@@ -308,12 +303,12 @@ const ServicesPage = () => {
                       {service.detail}
                     </p>
 
-                    {hasProjects && (
+                    {hasGalleryMatch && (
                       <button
                         onClick={() => handleServiceClick(service.title)}
                         className="mt-8 inline-flex items-center gap-2 px-7 py-3 bg-[#7a4f1d] text-white rounded-full hover:bg-[#5a3a12] transition-all duration-300 hover:scale-105 shadow-md"
                       >
-                        View Our Work
+                        View Gallery
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                         </svg>

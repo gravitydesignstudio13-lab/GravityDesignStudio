@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { 
   Image, 
   X, 
   ChevronLeft, 
   ChevronRight,
-  Grid3x3,
-  List,
-  Heart,
-  Share2,
   LayoutGrid,
   LayoutList
 } from "lucide-react";
@@ -17,15 +14,16 @@ import {
 const BACKEND_URL = import.meta.env.VITE_BACKENDS_URL;
 
 const GalleryPage = () => {
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
   const [gallery, setGallery] = useState([]);
+  const [allGalleryItems, setAllGalleryItems] = useState([]);
   const [services, setServices] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [viewMode, setViewMode] = useState("grid");
-  const [likedImages, setLikedImages] = useState({});
 
   const getServices = async () => {
     try {
@@ -43,43 +41,94 @@ const GalleryPage = () => {
     }
   };
 
-  const getGallery = async () => {
+  const getAllGalleryItems = async () => {
     try {
-      const res = await axios.get(
-        `${BACKEND_URL}/api/gallery/all?page=${currentPage}&limit=${viewMode === "grid" ? 9 : 6}&category=${activeCategory}`
-      );
+      const res = await axios.get(`${BACKEND_URL}/api/gallery/all?limit=1000`);
       if (res?.data?.success) {
-        setGallery(res.data.data || []);
-        setTotalPages(res.data.totalPages || 1);
+        const items = res.data.data || [];
+        setAllGalleryItems(items);
+        console.log("All gallery items fetched:", items);
+        console.log("Available categories:", [...new Set(items.map(item => item.category))]);
+        return items;
       } else {
-        setGallery([]);
-        setTotalPages(1);
+        setAllGalleryItems([]);
+        return [];
       }
     } catch (error) {
-      console.log("GET GALLERY ERROR =", error);
-      setGallery([]);
-      setTotalPages(1);
+      console.log("GET ALL GALLERY ERROR =", error);
+      setAllGalleryItems([]);
+      return [];
     }
   };
 
+  // Client-side filtering and pagination
+  const filterAndPaginateGallery = (allItems, category, page, perPage) => {
+    let filteredItems = allItems;
+    if (category !== "All") {
+      filteredItems = allItems.filter(item => {
+        const itemCategory = (item.category || "").toLowerCase().trim();
+        const searchCategory = category.toLowerCase().trim();
+        return itemCategory === searchCategory || 
+               itemCategory.includes(searchCategory) ||
+               searchCategory.includes(itemCategory);
+      });
+    }
+    
+    console.log(`Filtering for category "${category}": Found ${filteredItems.length} items`);
+    
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+    const totalPagesCount = Math.ceil(filteredItems.length / perPage);
+    
+    return {
+      items: paginatedItems,
+      totalPages: totalPagesCount,
+      totalItems: filteredItems.length
+    };
+  };
+
+  const getGallery = async () => {
+    const { items, totalPages: totalPagesCount } = filterAndPaginateGallery(
+      allGalleryItems,
+      activeCategory,
+      currentPage,
+      viewMode === "grid" ? 9 : 6
+    );
+    
+    setGallery(items);
+    setTotalPages(totalPagesCount);
+  };
+
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category");
+    if (categoryFromUrl) {
+      const decodedCategory = decodeURIComponent(categoryFromUrl);
+      console.log("Category from URL:", decodedCategory);
+      setActiveCategory(decodedCategory);
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     getServices();
+    getAllGalleryItems();
   }, []);
 
   useEffect(() => {
-    getGallery();
-  }, [currentPage, activeCategory, viewMode]);
+    if (allGalleryItems.length > 0) {
+      getGallery();
+    }
+  }, [currentPage, activeCategory, viewMode, allGalleryItems]);
 
   const handleCategoryChange = (category) => {
+    console.log("Changing category to:", category);
     setActiveCategory(category);
     setCurrentPage(1);
-  };
-
-  const handleLike = (imageId) => {
-    setLikedImages(prev => ({
-      ...prev,
-      [imageId]: !prev[imageId]
-    }));
+    const newUrl = category === "All" 
+      ? "/gallery" 
+      : `/gallery?category=${encodeURIComponent(category)}`;
+    window.history.pushState({}, "", newUrl);
   };
 
   const openLightbox = (item, index) => {
@@ -103,7 +152,6 @@ const GalleryPage = () => {
     }
   };
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!selectedImage) return;
@@ -147,6 +195,18 @@ const GalleryPage = () => {
             <p className="text-xl text-gray-500 max-w-2xl mx-auto">
               Explore our curated collection of design works, concepts, and visual inspirations
             </p>
+            {activeCategory !== "All" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4"
+              >
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-[#7a4f1d]/20 rounded-full">
+                  <span className="text-[#7a4f1d] text-sm">Showing:</span>
+                  <span className="text-[#7a4f1d] font-semibold">{activeCategory}</span>
+                </span>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -164,7 +224,7 @@ const GalleryPage = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => handleCategoryChange(item)}
-                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                     activeCategory === item
                       ? "bg-gradient-to-r from-[#7a4f1d] to-[#c49a6c] text-white shadow-lg transform scale-105"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105"
@@ -247,22 +307,6 @@ const GalleryPage = () => {
                   <div className="absolute top-4 left-4 bg-[#7a4f1d]/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full">
                     {item.category}
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLike(item._id);
-                      }}
-                      className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition"
-                    >
-                      <Heart className={`w-4 h-4 ${likedImages[item._id] ? "fill-red-500 text-red-500" : "text-gray-700"}`} />
-                    </button>
-                    <button className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition">
-                      <Share2 className="w-4 h-4 text-gray-700" />
-                    </button>
-                  </div>
                 </motion.div>
               ) : (
                 // List View
@@ -282,29 +326,16 @@ const GalleryPage = () => {
                     />
                   </div>
                   <div className="flex-1 p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="inline-block px-2 py-1 bg-[#7a4f1d]/10 text-[#7a4f1d] text-xs rounded-full mb-2">
-                          {item.category}
-                        </span>
-                        <h3 className="font-semibold text-gray-800 mb-1">
-                          {item.title || "Design Project"}
-                        </h3>
-                        <p className="text-gray-500 text-sm">
-                          {item.description || "Beautiful design work showcasing our expertise"}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLike(item._id);
-                          }}
-                          className="p-2 rounded-full hover:bg-gray-100 transition"
-                        >
-                          <Heart className={`w-4 h-4 ${likedImages[item._id] ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-                        </button>
-                      </div>
+                    <div>
+                      <span className="inline-block px-2 py-1 bg-[#7a4f1d]/10 text-[#7a4f1d] text-xs rounded-full mb-2">
+                        {item.category}
+                      </span>
+                      <h3 className="font-semibold text-gray-800 mb-1">
+                        {item.title || "Design Project"}
+                      </h3>
+                      <p className="text-gray-500 text-sm">
+                        {item.description || "Beautiful design work showcasing our expertise"}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -321,7 +352,19 @@ const GalleryPage = () => {
           >
             <Image className="w-20 h-20 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No images found</h3>
-            <p className="text-gray-400">No gallery items available in this category</p>
+            <p className="text-gray-400">
+              {activeCategory !== "All" 
+                ? `No gallery items available for "${activeCategory}" category` 
+                : "No gallery items available"}
+            </p>
+            {activeCategory !== "All" && (
+              <button
+                onClick={() => handleCategoryChange("All")}
+                className="mt-4 px-6 py-2 bg-[#7a4f1d] text-white rounded-full hover:bg-[#5a3a12] transition"
+              >
+                View All Categories
+              </button>
+            )}
           </motion.div>
         )}
       </section>
@@ -460,7 +503,7 @@ const GalleryPage = () => {
                 </div>
               </motion.div>
 
-              {/* Thumbnail Navigation (Optional) */}
+              {/* Thumbnail Navigation */}
               <div className="absolute bottom-4 left-0 right-0 overflow-x-auto">
                 <div className="flex justify-center gap-2 px-4 pb-4">
                   {gallery.map((item, idx) => (
