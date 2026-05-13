@@ -55,7 +55,7 @@ const ContactPage = () => {
       title: "Email",
       value: "gravitydesignstudio13@gmail.com",
       sub: "Send us your project details anytime",
-      action: "mailto:gravitydesigns1@yahoo.com",
+      action: "mailto:gravitydesignstudio13@gmail.com",
     },
     {
       icon: <MapPin size={24} />,
