@@ -53,7 +53,7 @@ const ContactPage = () => {
     {
       icon: <Mail size={24} />,
       title: "Email",
-      value: "gravitydesigns1@yahoo.com",
+      value: "gravitydesignstudio13@gmail.com",
       sub: "Send us your project details anytime",
       action: "mailto:gravitydesigns1@yahoo.com",
     },
