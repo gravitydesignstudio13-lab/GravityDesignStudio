@@ -50,7 +50,6 @@ export const addCategory = async (req, res) => {
       message: "Category added successfully",
       data: newCategory,
     });
-
   } catch (error) {
     console.log("❌ ERROR =", error);
     return res.status(500).json({
@@ -123,6 +122,26 @@ export const deleteCategory = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error while deleting Image",
+      error: error.message,
+    });
+  }
+};
+
+export const getAllGalleryRaw = async (req, res) => {
+  try {
+    const gallery = await Gallery.find();
+
+    return res.status(200).json({
+      success: true,
+
+      data: gallery,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+
+      message: "Error while fetching gallery",
+
       error: error.message,
     });
   }
