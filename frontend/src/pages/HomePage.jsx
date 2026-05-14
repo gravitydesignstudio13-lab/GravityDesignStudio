@@ -270,7 +270,7 @@ const HomePage = () => {
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                   About Us
                 </span>
-                <h2 className="mt-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl text-gray-900">
+                <h2 className="mt-6 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl text-gray-900">
                   Designing spaces that feel{" "}
                   <span className="text-[#7a5c02]">beautiful</span>,
                   <br />
@@ -325,7 +325,7 @@ const HomePage = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Our Services
               </span>
-              <h2 className="mt-6 text-4xl font-bold text-[#7a5c02] sm:text-5xl lg:text-6xl">
+              <h2 className="mt-6 text-3xl font-bold text-[#7a5c02] sm:text-4xl lg:text-5xl">
                 Modern and creative design
                 <br />
                 solutions tailored to you.
@@ -459,7 +459,7 @@ const HomePage = () => {
               Portfolio
             </span>
 
-            <h2 className="mt-6 text-4xl font-bold text-[#7a5c02] sm:text-5xl lg:text-6xl">
+            <h2 className="mt-6 text-3xl font-bold text-[#7a5c02] sm:text-4xl lg:text-5xl">
               Download Our Portfolio
             </h2>
 
@@ -528,7 +528,7 @@ const HomePage = () => {
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                   Why Choose Us
                 </span>
-                <h2 className="mt-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl text-gray-900">
+                <h2 className="mt-6 text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl text-gray-900">
                   Thoughtful design with
                   <br />
                   <span className="text-[#7a5c02]">beauty, purpose, and</span>
@@ -595,7 +595,7 @@ const HomePage = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Testimonials
               </span>
-              <h2 className="mt-6 text-4xl font-bold text-[#7a5c02] sm:text-5xl lg:text-6xl">
+              <h2 className="mt-6 text-3xl font-bold text-[#7a5c02] sm:text-4xl lg:text-5xl">
                 What Our Clients Say
               </h2>
               <div className="mt-6 w-20 h-1 bg-gradient-to-r from-amber-500 to-transparent mx-auto" />
@@ -699,7 +699,7 @@ const HomePage = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 Let's Work Together
               </span>
-              <h2 className="mt-6 text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
+              <h2 className="mt-6 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
                 Ready to transform your space?
               </h2>
               <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300">

@@ -110,7 +110,7 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white"
           >
             Let's Discuss Your <span className="text-amber-400">Next Design Project</span>
           </motion.h1>
@@ -207,7 +207,7 @@ const ContactPage = () => {
                 <div className="space-y-2 text-gray-300">
                   <div className="flex justify-between">
                     <span>Sunday - Friday</span>
-                    <span>10:00 AM - 6:00 PM</span>
+                    <span>10:00 AM - 8:00 PM</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Saturday</span>

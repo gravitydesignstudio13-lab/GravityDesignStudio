@@ -189,7 +189,7 @@ const GalleryPage = () => {
             <span className="inline-block px-4 py-1.5 rounded-full bg-[#7a4f1d]/10 text-[#7a4f1d] text-sm font-medium tracking-wide mb-5">
               Our Portfolio
             </span>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">
               Visual Inspirations
             </h1>
             <p className="text-xl text-gray-500 max-w-2xl mx-auto">

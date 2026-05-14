@@ -105,7 +105,7 @@ if (loading) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white"
           >
             Our <span className="text-amber-400">Projects</span>
           </motion.h1>

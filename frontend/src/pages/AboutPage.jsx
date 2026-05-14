@@ -52,7 +52,7 @@ const AboutPage = () => {
             <span className="inline-block px-4 py-1.5 rounded-full bg-[#7a4f1d]/10 text-[#7a4f1d] text-sm font-medium tracking-wide mb-6">
               Since 2015
             </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#7a4f1d]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#7a4f1d]">
               About Gravity
               <br />
               Design Studio

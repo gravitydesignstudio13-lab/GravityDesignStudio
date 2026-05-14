@@ -37,7 +37,7 @@ const Navbar = () => {
         className="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm"
       >
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-12 py-4">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1 min-w-0">
             <img className="h-12 sm:h-14 shrink-0" src={logo} alt="Logo" />
             <h1 className="font-logo text-base sm:text-xl lg:text-2xl font-bold ">
               Gravity Design Studio
