@@ -70,22 +70,6 @@ const ServicesPage = () => {
     }
   };
 
-  // // Direct check if service title matches any gallery category
-  // const hasGalleryItemsForService = (serviceTitle) => {
-  //   if (!serviceTitle || galleryItems.length === 0) return false;
-    
-  //   // Convert service title to lowercase for case-insensitive comparison
-  //   const serviceTitleLower = serviceTitle.toLowerCase().trim();
-    
-  //   // Check if any gallery item has a category that matches the service title
-  //   return galleryItems.some((item) => {
-  //     const itemCategory = (item.category || "").toLowerCase().trim();
-  //     // Direct match between service title and gallery category
-  //     return itemCategory === serviceTitleLower || 
-  //            serviceTitleLower.includes(itemCategory) ||
-  //            itemCategory.includes(serviceTitleLower);
-  //   });
-  // };
 
 const hasGalleryItemsForService = (serviceTitle) => {
   if (!serviceTitle || galleryItems.length === 0) return false;
