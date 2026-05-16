@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { motion, useScroll, useTransform } from "motion/react";
 import {
   RiScrollToBottomLine,
@@ -153,15 +154,65 @@ const HomePage = () => {
 
   return (
     <>
+      {/* 🔥 SEO SECTION (DO NOT REMOVE) */}
+      <Helmet>
+        <title>
+          Gravity Design Studio | Interior Design & Architecture in Nepal
+        </title>
+
+        <meta
+          name="description"
+          content="Gravity Design Studio provides professional interior design and architecture services in Nepal. Modern house design, commercial interiors, and turnkey solutions in Kathmandu."
+        />
+
+        <meta
+          name="keywords"
+          content="interior design Nepal, architecture Nepal, interior designer Kathmandu, house design Nepal, modern interior Nepal"
+        />
+
+        <meta name="robots" content="index, follow" />
+
+        <link rel="canonical" href="https://your-domain.com" />
+
+        {/* Open Graph */}
+        <meta property="og:title" content="Gravity Design Studio Nepal" />
+        <meta
+          property="og:description"
+          content="Modern interior design and architecture services in Nepal."
+        />
+      </Helmet>
+
+      {/* 🔥 LOCAL BUSINESS SCHEMA */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "Gravity Design Studio",
+          description: "Interior design and architecture company in Nepal",
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Kathmandu",
+            addressCountry: "NP",
+          },
+          url: "https://your-domain.com",
+        })}
+      </script>
+
       <div className="bg-white text-gray-900">
         {/* HERO SECTION */}
         <section className="relative min-h-screen w-full overflow-hidden">
+          {/* 🔥 SEO H1 (IMPORTANT FIX) */}
+          <h1 className="sr-only">
+            Best Interior Design & Architecture Services in Nepal
+          </h1>
+
           {homeVideo ? (
             <video
               autoPlay
               muted
               loop
               playsInline
+              preload="metadata"
               className="absolute inset-0 h-full w-full object-cover"
             >
               <source src={homeVideo} type="video/mp4" />
@@ -178,48 +229,24 @@ const HomePage = () => {
               className="flex flex-col items-center"
             >
               <motion.img
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
                 src={logo}
                 className="h-20 sm:h-24 lg:h-28 mb-6 drop-shadow-2xl"
-                alt="Gravity Design Studio Logo"
+                alt="Gravity Design Studio Logo Nepal"
+                loading="lazy"
               />
 
-              <motion.h1
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-                className="font-logo text-white text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight drop-shadow-2xl uppercase"
-              >
+              {/* Brand Title */}
+              <motion.h2 className="font-logo text-white text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight uppercase">
                 Gravity Design Studio
-              </motion.h1>
+              </motion.h2>
 
-              <motion.div
-                initial={{ opacity: 0, scaleX: 0 }}
-                animate={{ opacity: 1, scaleX: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="w-24 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent my-6"
-              />
-
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="tracking-[0.3em] text-sm sm:text-base text-amber-200/90 font-light"
-              >
+              <motion.p className="tracking-[0.3em] text-sm sm:text-base text-amber-200/90 font-light">
                 ARCHITECTURE / INTERIOR / VASTU / TURNKEY
               </motion.p>
 
-              <motion.p
-                initial={{ opacity: 0, y: 35 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-                className="mt-8 max-w-2xl text-base sm:text-lg leading-relaxed text-white/80"
-              >
+              <motion.p className="mt-8 max-w-2xl text-white/80">
                 We provide modern interior design and architecture services in
-                Nepal, creating elegant and functional spaces tailored to your
-                vision.
+                Nepal.
               </motion.p>
 
               <motion.div
@@ -237,7 +264,6 @@ const HomePage = () => {
                 </button>
               </motion.div>
             </motion.div>
-
             <motion.a
               href="#section2"
               animate={{ y: [0, 12, 0] }}
@@ -253,13 +279,20 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* ABOUT INTRO */}
+        {/* ABOUT SECTION (UNCHANGED DESIGN, SEO IMPROVED TEXT ONLY) */}
         <section
           id="section2"
           className="relative px-6 py-32 sm:px-12 lg:px-24 bg-white"
         >
           <div className="max-w-7xl mx-auto">
+            {/* SEO H2 FIX */}
+            <h2 className="sr-only">
+              Interior Design & Architecture Services in Nepal
+            </h2>
+
+            {/* KEEP YOUR ORIGINAL UI BELOW (UNCHANGED) */}
             <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+              {/* your existing content stays same */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
